@@ -45,16 +45,16 @@ class Config
         $key = explode('.', $key);
         $value = $default;
         $node = self::$params;
-
+        
         while(!empty($key)) {
             $path = array_shift($key);
             $value = (isset($node[$path])) ? $node[$path] : $default;
-
-            if(is_array($value)) {
+            
+            if(isset($node[$path]) && is_array($value)) {
                 $node = $node[$path];
             }
         }
-
+        
         return $value;
     }
 }
