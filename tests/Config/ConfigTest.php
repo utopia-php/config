@@ -46,13 +46,13 @@ class ConfigTest extends TestCase
         $this->assertEquals('default', Config::getParam('key3.keyx', 'default'));
         $this->assertEquals('default', Config::getParam('key3.key4.x', 'default'));
         
+        Config::setParam('child', 'childValue');
         Config::load('key5', __DIR__.'/demo.php');
 
         $this->assertEquals(include __DIR__.'/demo.php', Config::getParam('key5', []));
         $this->assertEquals([], Config::getParam('key6', []));
         $this->assertEquals('value1', Config::getParam('key5.key1', 'default'));
         $this->assertEquals('value2', Config::getParam('key5.key2', 'default'));
-        $this->assertEquals(['key1' => 'value1','key2' => 'value2',], Config::getParam('key5', 'default'));
         $this->assertEquals('default2', Config::getParam('key5.x', 'default2'));
     }
 }
