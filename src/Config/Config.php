@@ -16,7 +16,7 @@ class Config
      */
     static public function load(string $key, string $path)
     {
-        if(!is_readable($path)) {
+        if(!\is_readable($path)) {
             throw new Exception('Failed to load configuration file: '.$path);
         }
         
@@ -42,15 +42,15 @@ class Config
      */
     static public function getParam(string $key, $default = null)
     {
-        $key = explode('.', $key);
+        $key = \explode('.', $key);
         $value = $default;
         $node = self::$params;
         
         while(!empty($key)) {
-            $path = array_shift($key);
+            $path = \array_shift($key);
             $value = (isset($node[$path])) ? $node[$path] : $default;
             
-            if(isset($node[$path]) && is_array($value)) {
+            if(isset($node[$path]) && \is_array($value)) {
                 $node = $node[$path];
             }
         }
