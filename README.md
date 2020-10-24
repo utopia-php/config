@@ -1,10 +1,10 @@
 # Utopia Config
 
-[![Discord](https://badgen.net/badge/discord/chat/green)](https://discord.gg/GSeTUeA)
+[![Build Status](https://travis-ci.org/utopia-php/ab.svg?branch=master)](https://travis-ci.com/utopia-php/config)
 ![Total Downloads](https://img.shields.io/packagist/dt/utopia-php/config.svg)
-[![Chat With Us](https://img.shields.io/gitter/room/utopia-php/community.svg)](https://gitter.im/utopia-php/community?utm_source=share-link&utm_medium=link&utm_campaign=share-link)
+[![Discord](https://img.shields.io/discord/564160730845151244?label=discord)](https://appwrite.io/discord)
 
-Utopia Config library is simple and lite library for managing application configuration. This library is aiming to be as simple and easy to learn and use.
+Utopia Config library is simple and lite library for managing application configuration. This library is aiming to be as simple and easy to learn and use. This library is maintained by the [Appwrite team](https://appwrite.io).
 
 Although this library is part of the [Utopia Framework](https://github.com/utopia-php/framework) project it is dependency free and can be used as standalone with any other PHP project or framework.
 
@@ -40,7 +40,7 @@ Config::getParam('key5.key1', 'default'); // value1
 
 ## System Requirements
 
-Utopia Framework requires PHP 7.1 or later. We recommend using the latest PHP version whenever possible.
+Utopia Framework requires PHP 7.3 or later. We recommend using the latest PHP version whenever possible.
 
 ## Authors
 
