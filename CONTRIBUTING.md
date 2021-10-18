@@ -10,7 +10,7 @@ If you are worried or don’t know where to start, check out our next section ex
 
 Help us keep Utopia-php open and inclusive. Please read and follow our [Code of Conduct](https://github.com/utopia-php/abuse/blob/master/CODE_OF_CONDUCT.md).
 
-### Issues
+## Issues
 
 Issues should be used to report problems with the library, request a new feature, or to discuss potential changes before a PR is created. When you create a new Issue, a template will be loaded that will guide you through collecting and providing the information we need to investigate.
 
