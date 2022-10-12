@@ -7,7 +7,7 @@ use Exception;
 class Config
 {
     /**
-     * @var array
+     * @var array<string, mixed>
      */
     static $params = [];
 
