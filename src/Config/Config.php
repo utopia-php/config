@@ -18,7 +18,7 @@ class Config
      * 
      * @return void
      */
-    static public function load(string $key, string $path): void
+    public static function load(string $key, string $path): void
     {
         if(!\is_readable($path)) {
             throw new Exception('Failed to load configuration file: '.$path);
@@ -28,23 +28,23 @@ class Config
     }
 
     /**
-     * @param string $key
-     * @param mixed  $value
+     * @param  string  $key
+     * @param  mixed   $value
      *
      * @return void
      */
-    static public function setParam($key, $value): void
+    public static function setParam($key, $value): void
     {
         self::$params[$key] = $value;
     }
 
     /**
-     * @param string $key
-     * @param mixed $default
+     * @param  string  $key
+     * @param  mixed  $default
      *
      * @return mixed
      */
-    static public function getParam(string $key, $default = null)
+    public static function getParam(string $key, $default = null)
     {
         $key = \explode('.', $key);
         $value = $default;
