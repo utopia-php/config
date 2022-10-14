@@ -9,56 +9,54 @@ class Config
     /**
      * @var array
      */
-    static $params = [];
+    public static $params = [];
 
     /**
      * Load config file
-     * 
-     * @throws Exception
-     * 
+     *
      * @return void
+     *
+     * @throws Exception
      */
-    static public function load(string $key, string $path): void
+    public static function load(string $key, string $path): void
     {
-        if(!\is_readable($path)) {
+        if (! \is_readable($path)) {
             throw new Exception('Failed to load configuration file: '.$path);
         }
-        
+
         self::$params[$key] = include $path;
     }
 
     /**
-     * @param string $key
-     * @param mixed  $value
-     *
+     * @param  string  $key
+     * @param  mixed  $value
      * @return void
      */
-    static public function setParam($key, $value): void
+    public static function setParam($key, $value): void
     {
         self::$params[$key] = $value;
     }
 
     /**
-     * @param string $key
-     * @param mixed $default
-     *
+     * @param  string  $key
+     * @param  mixed  $default
      * @return mixed
      */
-    static public function getParam(string $key, $default = null)
+    public static function getParam(string $key, $default = null)
     {
         $key = \explode('.', $key);
         $value = $default;
         $node = self::$params;
-        
-        while(!empty($key)) {
+
+        while (! empty($key)) {
             $path = \array_shift($key);
             $value = (isset($node[$path])) ? $node[$path] : $default;
-            
-            if(isset($node[$path]) && \is_array($value)) {
+
+            if (isset($node[$path]) && \is_array($value)) {
                 $node = $node[$path];
             }
         }
-        
+
         return $value;
     }
 }

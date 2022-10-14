@@ -13,7 +13,6 @@ class ConfigTest extends TestCase
 {
     public function setUp(): void
     {
-        
     }
 
     public function tearDown(): void
@@ -26,19 +25,19 @@ class ConfigTest extends TestCase
         Config::setParam('key', 'value');
         $this->assertEquals('value', Config::getParam('key'));
         $this->assertEquals('default', Config::getParam('keyx', 'default'));
-        
+
         Config::setParam('key', 'value2');
         $this->assertEquals('value2', Config::getParam('key'));
-        
+
         Config::setParam('key2', 'value2');
         $this->assertEquals('value2', Config::getParam('key2'));
-        
+
         Config::setParam('key3', ['key4' => 'value4']);
         $this->assertEquals(['key4' => 'value4'], Config::getParam('key3'));
         $this->assertEquals('value4', Config::getParam('key3.key4'));
         $this->assertEquals('default', Config::getParam('key3.keyx', 'default'));
         $this->assertEquals('default', Config::getParam('key3.key4.x', 'default'));
-        
+
         Config::setParam('child', 'childValue');
         Config::load('key5', __DIR__.'/demo.php');
 
