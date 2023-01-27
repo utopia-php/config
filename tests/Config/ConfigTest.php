@@ -30,10 +30,10 @@ class ConfigTest extends TestCase
 
     public function tearDown(): void
     {
-        $this->test = null;
+        
     }
 
-    public function testTest()
+    public function testTest(): void
     {
         Config::setParam('key', 'value');
         $this->assertEquals('value', Config::getParam('key'));

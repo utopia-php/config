@@ -9,7 +9,7 @@ class Config
     /**
      * @var array<string, mixed>
      */
-    static $params = [];
+    static array $params = [];
 
     /**
      * Load config file
