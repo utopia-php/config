@@ -17,7 +17,6 @@ class ConfigTest extends TestCase
 
     public function tearDown(): void
     {
-        
     }
 
     public function testTest(): void
