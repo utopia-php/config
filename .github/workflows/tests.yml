@@ -14,13 +14,10 @@ jobs:
             - name: Checkout
               uses: actions/checkout@v3
 
-            - name: Setup PHP
-              uses: shivammathur/setup-php@2.25.2
-              with:
-                php-version: ${{ matrix.php-version }}
-
-            - name: Install Dependencies
-              run: composer install --ignore-platform-reqs
+            - name: Setup Environment
+              run: |
+                  docker build . -t config-dev
+                  docker run -d --name config-dev config-dev
 
             - name: Run Tests
-              run: composer test
+              run: docker exec config-dev composer test
