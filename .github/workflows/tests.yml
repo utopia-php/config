@@ -11,13 +11,14 @@ jobs:
                 php-version: [8.0, nightly]
 
         steps:
-            - name: Checkout
-              uses: actions/checkout@v3
-
-            - name: Setup Environment
-              run: |
-                  docker build . -t php8-env
-                  docker run -d --name tests php8-env
-
-            - name: Run Tests
-              run: docker exec tests composer test
+          - name: Checkout repository
+            uses: actions/checkout@v3
+            with:
+              fetch-depth: 2
+      
+          - run: git checkout HEAD^2
+      
+          - name: Run Tests
+            run: |
+              docker run --rm -v $PWD:/app composer sh -c \
+              "composer install --profile --ignore-platform-reqs && composer test"
