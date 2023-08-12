@@ -16,8 +16,8 @@ jobs:
 
             - name: Setup Environment
               run: |
-                  docker build . -t config-dev
-                  docker run -d --name config-dev config-dev
+                  docker build . -t php8-env
+                  docker run -d --name tests php8-env
 
             - name: Run Tests
-              run: docker exec config-dev composer test
+              run: docker exec tests composer test
