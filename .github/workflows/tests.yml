@@ -6,10 +6,6 @@ jobs:
     tests:
         runs-on: ubuntu-latest
 
-        strategy:
-            matrix:
-                php-version: [8.0, nightly]
-
         steps:
           - name: Checkout repository
             uses: actions/checkout@v3
