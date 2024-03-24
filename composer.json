@@ -10,6 +10,7 @@
     "scripts": {
         "lint": "./vendor/bin/pint --test",
         "format": "./vendor/bin/pint",
+        "tests": "vendor/bin/phpunit --configuration phpunit.xml",
         "check": "./vendor/bin/phpstan analyse --level 8 src tests"
     },
     "require": {
