@@ -9,11 +9,13 @@ class Config
     /**
      * @var array<string, mixed>
      */
-    public static $params = [];
+    public static array $params = [];
 
     /**
      * Load config file
      *
+     * @param  string  $key
+     * @param  string  $path
      * @return void
      *
      * @throws Exception
@@ -32,31 +34,33 @@ class Config
      * @param  mixed  $value
      * @return void
      */
-    public static function setParam($key, $value): void
+    public static function setParam(string $key, mixed $value): void
     {
         self::$params[$key] = $value;
     }
 
     /**
      * @param  string  $key
-     * @param  mixed  $default
+     * @param  mixed|null  $default
      * @return mixed
      */
-    public static function getParam(string $key, $default = null)
+    public static function getParam(string $key, mixed $default = null): mixed
     {
-        $key = \explode('.', $key);
-        $value = $default;
-        $node = self::$params;
-
-        while (! empty($key)) {
-            $path = \array_shift($key);
-            $value = (isset($node[$path])) ? $node[$path] : $default;
-
-            if (isset($node[$path]) && \is_array($value)) {
-                $node = $node[$path];
-            }
+        // fast path: no dots means flat key
+        if (! str_contains($key, '.')) {
+            return self::$params[$key] ?? $default;
         }
 
-        return $value;
+        // nested path:
+        // foreach instead of array_shift (avoids O(n) reindexing)
+        $node = self::$params;
+        foreach (\explode('.', $key) as $segment) {
+            if (! \is_array($node) || ! isset($node[$segment])) {
+                return $default;
+            }
+            $node = $node[$segment];
+        }
+
+        return $node;
     }
 }
