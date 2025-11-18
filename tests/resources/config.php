@@ -3,7 +3,7 @@
 use Utopia\Config\Config;
 
 // Comment line and few empty lines, ensure parser doesnt break
-// 
+//
 
 return [
     'key' => 'keyValue',
