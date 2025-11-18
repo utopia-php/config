@@ -17,11 +17,6 @@ jobs:
       uses: shivammathur/setup-php@v2
       with:
         php-version: ${{ matrix.php-versions }}
-        
-    - name: Install PHP dependencies
-      run: |
-        sudo apt-get -y install gcc g++ make autoconf libc-dev pkg-config libyaml-dev
-        yes '' | sudo pecl install yaml
 
     - name: Validate composer.json and composer.lock
       run: composer validate --strict
