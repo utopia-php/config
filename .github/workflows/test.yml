@@ -20,8 +20,8 @@ jobs:
         
     - name: Install PHP dependencies
       run: |
-        apt-get -y install gcc g++ make autoconf libc-dev pkg-config libyaml-dev
-        yes '' | pecl install yaml
+        sudo apt-get -y install gcc g++ make autoconf libc-dev pkg-config libyaml-dev
+        yes '' | sudo pecl install yaml
 
     - name: Validate composer.json and composer.lock
       run: composer validate --strict
