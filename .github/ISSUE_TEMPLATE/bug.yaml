@@ -52,6 +52,10 @@ body:
       description: "What version of PHP are you running?"
       options:
         - PHP 8.0
+        - PHP 8.1
+        - PHP 8.2
+        - PHP 8.3
+        - PHP 8.4
         - Different version (specify in environment)
     validations:
       required: true

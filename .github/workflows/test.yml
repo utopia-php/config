@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        php-versions: ['8.1', '8.2', '8.3', 'nightly']
+        php-versions: ['8.0', '8.1', '8.2', '8.3', '8.4', 'nightly']
 
     steps:
     - name: Checkout repository
@@ -25,4 +25,4 @@ jobs:
       run: composer install --ignore-platform-reqs
 
     - name: Run tests
-      run: composer test
+      run: composer tests

@@ -33,7 +33,7 @@ Config::getParam('key3'); // ['key4' => 'value4']
 Config::getParam('key3.key4'); // value4
 
 // Load config file (plain array)
-Config::load('key5', __DIR__.'/demo.php');
+Config::load('key5', __DIR__.'/demo.php', adapter: new PHP());
 Config::getParam('key5.key1', 'default'); // value1
 
 ```
@@ -41,6 +41,8 @@ Config::getParam('key5.key1', 'default'); // value1
 ## System Requirements
 
 Utopia Framework requires PHP 8.0 or later. We recommend using the latest PHP version whenever possible.
+
+When using YAML adapter, or running tests with it, you need to install the YAML extension for PHP.
 
 ## Copyright and license
 
