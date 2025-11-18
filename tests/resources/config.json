@@ -1,6 +1,5 @@
 {
   "key": "keyValue",
   "nested": { "key": "nestedKeyValue" },
-  "array": ["arrayValue1", "arrayValue2"],
-  "mirrored": "mirroredValue"
+  "array": ["arrayValue1", "arrayValue2"]
 }

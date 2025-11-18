@@ -4,6 +4,7 @@ namespace Utopia\Tests;
 
 use PHPUnit\Framework\TestCase;
 use Utopia\Config\Adapter;
+use Utopia\Config\Adapters\Dotenv;
 use Utopia\Config\Adapters\JSON;
 use Utopia\Config\Adapters\PHP;
 use Utopia\Config\Adapters\YAML;
@@ -54,18 +55,42 @@ class ConfigTest extends TestCase
             [
                 'adapter' => PHP::class,
                 'extension' => 'php',
+                'mirroring' => true,
+                'comments' => true,
+                'arrays' => true,
+                'objects' => true,
             ],
             [
                 'adapter' => JSON::class,
                 'extension' => 'json',
+                'mirroring' => false,
+                'comments' => false,
+                'arrays' => true,
+                'objects' => true,
             ],
             [
                 'adapter' => YAML::class,
                 'extension' => 'yaml',
+                'mirroring' => false,
+                'comments' => true,
+                'arrays' => true,
+                'objects' => true,
             ],
             [
                 'adapter' => YAML::class,
                 'extension' => 'yml',
+                'mirroring' => false,
+                'comments' => true,
+                'arrays' => true,
+                'objects' => true,
+            ],
+            [
+                'adapter' => Dotenv::class,
+                'extension' => 'env',
+                'mirroring' => false,
+                'comments' => true,
+                'arrays' => false,
+                'objects' => false,
             ],
         ];
     }
@@ -73,10 +98,14 @@ class ConfigTest extends TestCase
     /**
      * @param  class-string  $adapter
      * @param  string  $extension
+     * @param  bool  $mirroring
+     * @param  bool  $comments
+     * @param  bool  $arrays
+     * @param  bool  $objects
      *
      * @dataProvider proviteAdapterScenarios
      */
-    public function testAdapters(string $adapter, string $extension): void
+    public function testAdapters(string $adapter, string $extension, bool $mirroring = true, bool $comments = true, bool $arrays = true, bool $objects = true): void
     {
         $key = $extension;
 
@@ -88,12 +117,26 @@ class ConfigTest extends TestCase
         Config::load($key, __DIR__.'/../resources/config.'.$extension, $adpater);
 
         $this->assertEquals('keyValue', Config::getParam($key.'.key'));
-        $this->assertEquals('nestedKeyValue', Config::getParam($key.'.nested.key'));
-        $this->assertIsArray(Config::getParam($key.'.array'));
-        $this->assertCount(2, Config::getParam($key.'.array'));
-        $this->assertEquals('arrayValue1', Config::getParam($key.'.array')[0]);
-        $this->assertEquals('arrayValue2', Config::getParam($key.'.array')[1]);
-        $this->assertEquals('mirroredValue', Config::getParam($key.'.mirrored'));
+
+        if ($comments) {
+            $this->assertEquals('keyWithCommentValue', Config::getParam($key.'.keyWithComment'));
+        }
+
+        if ($mirroring) {
+            $this->assertEquals('mirroredValue', Config::getParam($key.'.mirrored'));
+        }
+
+        if ($arrays) {
+            $this->assertIsArray(Config::getParam($key.'.array'));
+            $this->assertCount(2, Config::getParam($key.'.array'));
+            $this->assertEquals('arrayValue1', Config::getParam($key.'.array')[0]);
+            $this->assertEquals('arrayValue2', Config::getParam($key.'.array')[1]);
+        }
+
+        if ($objects) {
+            $this->assertEquals('nestedKeyValue', Config::getParam($key.'.nested.key'));
+        }
+
         $this->assertEquals('defaultValue', Config::getParam($key.'.non-existing-key', 'defaultValue'));
 
         // TODO: In future, improve test for more structures (empty object, empty array, more nested objects, nested array in object, nested object in array, numbers, floats, booleans, ..)
