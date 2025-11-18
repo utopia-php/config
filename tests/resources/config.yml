@@ -1,0 +1,7 @@
+key: keyValue
+nested:
+  key: nestedKeyValue
+array:
+  - arrayValue1
+  - arrayValue2
+mirrored: mirroredValue # Yaml doesnt support mirroring

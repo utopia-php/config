@@ -2,7 +2,8 @@
 
 namespace Utopia\Config;
 
-use Exception;
+use Utopia\Config\Exceptions\Load;
+use Utopia\Config\Exceptions\Parse;
 
 class Config
 {
@@ -18,15 +19,16 @@ class Config
      * @param  string  $path
      * @return void
      *
-     * @throws Exception
+     * @throws Load
+     * @throws Parse
      */
-    public static function load(string $key, string $path): void
+    public static function load(string $key, string $path, Adapter $adapter): void
     {
         if (! \is_readable($path)) {
-            throw new Exception('Failed to load configuration file: '.$path);
+            throw new Load('Failed to load configuration file: '.$path);
         }
 
-        self::$params[$key] = include $path;
+        self::$params[$key] = $adapter->load($path);
     }
 
     /**
