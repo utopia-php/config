@@ -30,20 +30,20 @@ class ConfigTest extends TestCase
     public function testSetParam(): void
     {
         Config::setParam('key', 'value');
-        $this->assertEquals('value', Config::getParam('key'));
-        $this->assertEquals('default', Config::getParam('keyx', 'default'));
+        $this->assertSame('value', Config::getParam('key'));
+        $this->assertSame('default', Config::getParam('keyx', 'default'));
 
         Config::setParam('key', 'value2');
-        $this->assertEquals('value2', Config::getParam('key'));
+        $this->assertSame('value2', Config::getParam('key'));
 
         Config::setParam('key2', 'value2');
-        $this->assertEquals('value2', Config::getParam('key2'));
+        $this->assertSame('value2', Config::getParam('key2'));
 
         Config::setParam('key3', ['key4' => 'value4']);
-        $this->assertEquals(['key4' => 'value4'], Config::getParam('key3'));
-        $this->assertEquals('value4', Config::getParam('key3.key4'));
-        $this->assertEquals('default', Config::getParam('key3.keyx', 'default'));
-        $this->assertEquals('default', Config::getParam('key3.key4.x', 'default'));
+        $this->assertSame(['key4' => 'value4'], Config::getParam('key3'));
+        $this->assertSame('value4', Config::getParam('key3.key4'));
+        $this->assertSame('default', Config::getParam('key3.keyx', 'default'));
+        $this->assertSame('default', Config::getParam('key3.key4.x', 'default'));
     }
 
     /**
@@ -116,28 +116,28 @@ class ConfigTest extends TestCase
 
         Config::load($key, __DIR__.'/../resources/config.'.$extension, $adpater);
 
-        $this->assertEquals('keyValue', Config::getParam($key.'.key'));
+        $this->assertSame('keyValue', Config::getParam($key.'.key'));
 
         if ($comments) {
-            $this->assertEquals('keyWithCommentValue', Config::getParam($key.'.keyWithComment'));
+            $this->assertSame('keyWithCommentValue', Config::getParam($key.'.keyWithComment'));
         }
 
         if ($mirroring) {
-            $this->assertEquals('mirroredValue', Config::getParam($key.'.mirrored'));
+            $this->assertSame('mirroredValue', Config::getParam($key.'.mirrored'));
         }
 
         if ($arrays) {
             $this->assertIsArray(Config::getParam($key.'.array'));
             $this->assertCount(2, Config::getParam($key.'.array'));
-            $this->assertEquals('arrayValue1', Config::getParam($key.'.array')[0]);
-            $this->assertEquals('arrayValue2', Config::getParam($key.'.array')[1]);
+            $this->assertSame('arrayValue1', Config::getParam($key.'.array')[0]);
+            $this->assertSame('arrayValue2', Config::getParam($key.'.array')[1]);
         }
 
         if ($objects) {
-            $this->assertEquals('nestedKeyValue', Config::getParam($key.'.nested.key'));
+            $this->assertSame('nestedKeyValue', Config::getParam($key.'.nested.key'));
         }
 
-        $this->assertEquals('defaultValue', Config::getParam($key.'.non-existing-key', 'defaultValue'));
+        $this->assertSame('defaultValue', Config::getParam($key.'.non-existing-key', 'defaultValue'));
 
         // TODO: In future, improve test for more structures (empty object, empty array, more nested objects, nested array in object, nested object in array, numbers, floats, booleans, ..)
 
