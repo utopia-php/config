@@ -2,67 +2,67 @@
 
 namespace Utopia\Config;
 
+use Utopia\Config\Attributes\Key;
 use Utopia\Config\Exceptions\Load;
-use Utopia\Config\Exceptions\Parse;
 
 class Config
 {
     /**
-     * @var array<string, mixed>
+     * @var array<Loader>
      */
-    public static array $params = [];
+    protected array $loaders = [];
 
     /**
-     * Load config file
-     *
-     * @param  string  $key
-     * @param  string  $path
-     * @return void
-     *
-     * @throws Load
-     * @throws Parse
+     * @param  array<Loader>|Loader  $loaders
      */
-    public static function load(string $key, string $path, Adapter $adapter): void
+    public function __construct(mixed $loaders)
     {
-        if (! \is_readable($path)) {
-            throw new Load('Failed to load configuration file: '.$path);
+        if (\is_array($loaders)) {
+            $this->loaders = $loaders;
+        } else {
+            $this->loaders = [$loaders];
         }
-
-        self::$params[$key] = $adapter->load($path);
     }
 
     /**
-     * @param  string  $key
-     * @param  mixed  $value
-     * @return void
+     * @template T of object
+     *
+     * @param  class-string<T>  $className
+     * @return T
      */
-    public static function setParam(string $key, mixed $value): void
+    public function load(string $className): mixed
     {
-        self::$params[$key] = $value;
-    }
-
-    /**
-     * @param  string  $key
-     * @param  mixed|null  $default
-     * @return mixed
-     */
-    public static function getParam(string $key, mixed $default = null): mixed
-    {
-        // fast path: no dots means flat key
-        if (! str_contains($key, '.')) {
-            return self::$params[$key] ?? $default;
+        if (empty($this->loaders)) {
+            throw new Load('No loaders specified. Add a loader with addLoader() method');
         }
 
-        // nested path:
-        // foreach instead of array_shift (avoids O(n) reindexing)
-        $node = self::$params;
-        foreach (\explode('.', $key) as $segment) {
-            if (! \is_array($node) || ! isset($node[$segment])) {
-                return $default;
+        $data = [];
+        foreach ($this->loaders as $loader) {
+            $contents = $loader->getSource()->getContents();
+            $data = array_merge($data, $loader->getAdapter()->parse($contents));
+        }
+
+        $instance = new $className();
+
+        $reflection = new \ReflectionClass($className);
+        foreach ($reflection->getProperties() as $property) {
+            foreach ($property->getAttributes(Key::class) as $attribute) {
+                $key = $attribute->newInstance();
+                $value = $data[$key->name] ?? null;
+
+                if ($key->required && $value === null) {
+                    throw new Load("Missing required key: {$key->name}");
+                }
+
+                if (! $key->validator->isValid($value)) {
+                    throw new Load("Invalid value for key: {$key->validator->getDescription()}");
+                }
+
+                $propertyName = $property->name;
+                $instance->$propertyName = $value;
             }
-            $node = $node[$segment];
         }
 
-        return $node;
+        return $instance;
     }
 }

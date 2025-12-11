@@ -12,22 +12,7 @@ class PHP extends Adapter
      */
     public function parse(string $contents): array
     {
+        // TODO: Must be able to parse
         throw new Parse('PHP config only supports loading, not parsing.');
-    }
-
-    /**
-     * Overrides native behaviour as parsing and loading are same step
-     *
-     * @return array<string, mixed>
-     */
-    public function load(string $path): array
-    {
-        $contents = include $path;
-
-        if (! \is_array($contents)) {
-            throw new \Exception('PHP config did not return any contents.');
-        }
-
-        return (array) $contents;
     }
 }
