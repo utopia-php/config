@@ -121,12 +121,16 @@ class ConfigTest extends TestCase
         }
 
         if ($arrays) {
+            $this->assertNotNull($testConfig->array);
+            $this->assertIsArray($testConfig->array);
             $this->assertCount(2, $testConfig->array);
             $this->assertSame('arrayValue1', $testConfig->array[0]);
             $this->assertSame('arrayValue2', $testConfig->array[1]);
         }
 
         if ($objects) {
+            $this->assertNotNull($testConfig->nested);
+            $this->assertArrayHasKey('key', $testConfig->nested);
             $this->assertSame('nestedKeyValue', $testConfig->nested['key']);
         }
 
