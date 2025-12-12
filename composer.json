@@ -14,7 +14,7 @@
         "check": "./vendor/bin/phpstan analyse --level 8 src tests"
     },
     "require": {
-        "php": ">=8.0",
+        "php": ">=8.1",
         "ext-yaml": "*",
         "utopia-php/validators": "0.1.*"
     },
