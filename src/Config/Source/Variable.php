@@ -1,6 +1,6 @@
 <?php
 
-namespace Utopia\Config\Sources;
+namespace Utopia\Config\Source;
 
 use Utopia\Config\Source;
 

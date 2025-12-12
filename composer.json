@@ -8,20 +8,20 @@
         "psr-4": {"Utopia\\Config\\": "src/Config"}
     },
     "scripts": {
-        "lint": "./vendor/bin/pint --test",
-        "format": "./vendor/bin/pint",
+        "lint": "./vendor/bin/pint --config pint.json --test",
+        "format": "./vendor/bin/pint --config pint.json",
         "tests": "vendor/bin/phpunit --configuration phpunit.xml",
         "check": "./vendor/bin/phpstan analyse --level 8 src tests"
     },
     "require": {
         "php": ">=8.0",
         "ext-yaml": "*",
-        "utopia-php/validators": "dev-main"
+        "utopia-php/validators": "0.1.*"
     },
     "require-dev": {
-        "phpunit/phpunit": "^9.3",
-        "phpstan/phpstan": "^2.0",
-        "laravel/pint": "1.2.*"
+        "phpunit/phpunit": "12.*.*",
+        "phpstan/phpstan": "2.*.*",
+        "laravel/pint": "1.*.*"
     },
     "minimum-stability": "dev"
 }

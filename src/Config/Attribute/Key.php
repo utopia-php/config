@@ -1,6 +1,6 @@
 <?php
 
-namespace Utopia\Config\Attributes;
+namespace Utopia\Config\Attribute;
 
 use Attribute;
 use Utopia\Validator;

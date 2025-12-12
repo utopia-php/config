@@ -2,8 +2,8 @@
 
 namespace Utopia\Config;
 
-use Utopia\Config\Attributes\Key;
-use Utopia\Config\Exceptions\Load;
+use Utopia\Config\Attribute\Key;
+use Utopia\Config\Exception\Load;
 
 class Config
 {
@@ -39,6 +39,10 @@ class Config
         $data = [];
         foreach ($this->loaders as $loader) {
             $contents = $loader->getSource()->getContents();
+            if ($contents === null) {
+                throw new Load('Loader returned null contents.');
+            }
+
             $data = array_merge($data, $loader->getAdapter()->parse($contents));
         }
 
@@ -55,7 +59,7 @@ class Config
                 }
 
                 if (! $key->validator->isValid($value)) {
-                    throw new Load("Invalid value for key: {$key->validator->getDescription()}");
+                    throw new Load("Invalid value for {$key->name}: {$key->validator->getDescription()}");
                 }
 
                 $propertyName = $property->name;

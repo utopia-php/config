@@ -2,7 +2,7 @@
 
 namespace Utopia\Config;
 
-use Utopia\Config\Exceptions\Parse;
+use Utopia\Config\Exception\Parse;
 
 abstract class Adapter
 {
