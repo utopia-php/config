@@ -16,26 +16,7 @@ composer require utopia-php/config
 ```
 
 ```php
-<?php
-
-require_once '../vendor/autoload.php';
-
-use Utopia\Config\Config;
-
-// Basic params
-Config::setParam('key', 'value');
-Config::getParam('key'); // Value
-Config::getParam('keyx', 'default'); // default
-
-// Nested params
-Config::setParam('key3', ['key4' => 'value4']);
-Config::getParam('key3'); // ['key4' => 'value4']
-Config::getParam('key3.key4'); // value4
-
-// Load config file (plain array)
-Config::load('key5', __DIR__.'/demo.php', adapter: new PHP());
-Config::getParam('key5.key1', 'default'); // value1
-
+# TODO: Document
 ```
 
 ## System Requirements
