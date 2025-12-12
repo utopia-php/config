@@ -19,7 +19,7 @@
         "utopia-php/validators": "0.1.*"
     },
     "require-dev": {
-        "phpunit/phpunit": "12.*.*",
+        "phpunit/phpunit": "8.*.*",
         "phpstan/phpstan": "2.*.*",
         "laravel/pint": "1.*.*"
     },

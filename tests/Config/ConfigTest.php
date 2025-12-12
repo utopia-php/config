@@ -2,7 +2,6 @@
 
 namespace Utopia\Tests;
 
-use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Utopia\Config\Adapter;
 use Utopia\Config\Adapter\Dotenv;
@@ -36,14 +35,14 @@ class TestConfig
     /**
      * @var array<string> $array
      */
-    #[Key('array', new ArrayList(new Text(1024, 0), 100), required: false)]
-    public array $array;
+    #[Key('array', new Nullable(new ArrayList(new Text(1024, 0), 100)), required: false)]
+    public ?array $array;
 
     /**
      * @var array<string, string> $nested
      */
-    #[Key('nested', new ValidatorJSON(), required: false)]
-    public array $nested;
+    #[Key('nested', new Nullable(new ValidatorJSON()), required: false)]
+    public ?array $nested;
 }
 
 // Tests themselves
@@ -77,7 +76,6 @@ class ConfigTest extends TestCase
                 'arrays' => true,
                 'objects' => true,
             ],
-            /*
             [
                 'adapter' => YAML::class,
                 'extension' => 'yaml',
@@ -99,14 +97,13 @@ class ConfigTest extends TestCase
                 'arrays' => false,
                 'objects' => false,
             ],
-             */
         ];
     }
 
     /**
      * @param  class-string  $adapter
+     * @dataProvider provideAdapterScenarios
      */
-    #[DataProvider('provideAdapterScenarios')]
     public function testAdapters(string $adapter, string $extension, bool $comments = true, bool $arrays = true, bool $objects = true): void
     {
         $adapter = new $adapter();
