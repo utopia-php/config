@@ -4,58 +4,67 @@ namespace Utopia\Tests;
 
 use PHPUnit\Framework\TestCase;
 use Utopia\Config\Adapter;
-use Utopia\Config\Adapters\Dotenv;
-use Utopia\Config\Adapters\JSON;
-use Utopia\Config\Adapters\PHP;
-use Utopia\Config\Adapters\YAML;
+use Utopia\Config\Adapter\Dotenv;
+use Utopia\Config\Adapter\JSON;
+use Utopia\Config\Adapter\PHP;
+use Utopia\Config\Adapter\YAML;
+use Utopia\Config\Attribute\Key;
 use Utopia\Config\Config;
-use Utopia\Config\Exceptions\Load;
+use Utopia\Config\Exception\Load;
+use Utopia\Config\Loader;
+use Utopia\Config\Source\File;
+use Utopia\Validator\ArrayList;
+use Utopia\Validator\JSON as ValidatorJSON;
+use Utopia\Validator\Nullable;
+use Utopia\Validator\Text;
 
+// Initial setup
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
+// Schemas used for configs in test scenarios
+class TestConfig
+{
+    #[Key('key', new Text(1024, 0), required: true)]
+    public string $key;
+
+    #[Key('keyWithComment', new Nullable(new Text(1024, 0)), required: false)]
+    public ?string $keyWithComment;
+
+    /**
+     * @var array<string> $array
+     */
+    #[Key('array', new Nullable(new ArrayList(new Text(1024, 0), 100)), required: false)]
+    public ?array $array;
+
+    /**
+     * @var array<string, string> $nested
+     */
+    #[Key('nested', new Nullable(new ValidatorJSON()), required: false)]
+    public ?array $nested;
+}
+
+// Tests themselves
 class ConfigTest extends TestCase
 {
-    public function setUp(): void
-    {
-        // Used in some adapter tests (like PHP) to ensure values can be mirrored
-        Config::setParam('mirrored', 'mirroredValue');
-    }
-
-    public function tearDown(): void
+    protected function setUp(): void
     {
     }
 
-    public function testSetParam(): void
+    protected function tearDown(): void
     {
-        Config::setParam('key', 'value');
-        $this->assertSame('value', Config::getParam('key'));
-        $this->assertSame('default', Config::getParam('keyx', 'default'));
-
-        Config::setParam('key', 'value2');
-        $this->assertSame('value2', Config::getParam('key'));
-
-        Config::setParam('key2', 'value2');
-        $this->assertSame('value2', Config::getParam('key2'));
-
-        Config::setParam('key3', ['key4' => 'value4']);
-        $this->assertSame(['key4' => 'value4'], Config::getParam('key3'));
-        $this->assertSame('value4', Config::getParam('key3.key4'));
-        $this->assertSame('default', Config::getParam('key3.keyx', 'default'));
-        $this->assertSame('default', Config::getParam('key3.key4.x', 'default'));
     }
 
     /**
      * @return array<mixed>
      */
-    public function proviteAdapterScenarios(): array
+    public static function provideAdapterScenarios(): array
     {
         return [
             [
                 'adapter' => PHP::class,
                 'extension' => 'php',
-                'mirroring' => true,
                 'comments' => true,
                 'arrays' => true,
                 'objects' => true,
@@ -63,7 +72,6 @@ class ConfigTest extends TestCase
             [
                 'adapter' => JSON::class,
                 'extension' => 'json',
-                'mirroring' => false,
                 'comments' => false,
                 'arrays' => true,
                 'objects' => true,
@@ -71,7 +79,6 @@ class ConfigTest extends TestCase
             [
                 'adapter' => YAML::class,
                 'extension' => 'yaml',
-                'mirroring' => false,
                 'comments' => true,
                 'arrays' => true,
                 'objects' => true,
@@ -79,7 +86,6 @@ class ConfigTest extends TestCase
             [
                 'adapter' => YAML::class,
                 'extension' => 'yml',
-                'mirroring' => false,
                 'comments' => true,
                 'arrays' => true,
                 'objects' => true,
@@ -87,7 +93,6 @@ class ConfigTest extends TestCase
             [
                 'adapter' => Dotenv::class,
                 'extension' => 'env',
-                'mirroring' => false,
                 'comments' => true,
                 'arrays' => false,
                 'objects' => false,
@@ -97,52 +102,41 @@ class ConfigTest extends TestCase
 
     /**
      * @param  class-string  $adapter
-     * @param  string  $extension
-     * @param  bool  $mirroring
-     * @param  bool  $comments
-     * @param  bool  $arrays
-     * @param  bool  $objects
-     *
-     * @dataProvider proviteAdapterScenarios
+     * @dataProvider provideAdapterScenarios
      */
-    public function testAdapters(string $adapter, string $extension, bool $mirroring = true, bool $comments = true, bool $arrays = true, bool $objects = true): void
+    public function testAdapters(string $adapter, string $extension, bool $comments = true, bool $arrays = true, bool $objects = true): void
     {
-        $key = $extension;
-
-        $adpater = new $adapter();
-        if (! ($adpater instanceof Adapter)) {
+        $adapter = new $adapter();
+        if (! ($adapter instanceof Adapter)) {
             throw new \Exception('Test scenario includes invalid adapter.');
         }
 
-        Config::load($key, __DIR__.'/../resources/config.'.$extension, $adpater);
+        $config = new Config(new Loader(new File(__DIR__.'/../resources/config.'.$extension), $adapter));
+        $testConfig = $config->load(TestConfig::class);
 
-        $this->assertSame('keyValue', Config::getParam($key.'.key'));
+        $this->assertSame('keyValue', $testConfig->key);
 
         if ($comments) {
-            $this->assertSame('keyWithCommentValue', Config::getParam($key.'.keyWithComment'));
-        }
-
-        if ($mirroring) {
-            $this->assertSame('mirroredValue', Config::getParam($key.'.mirrored'));
+            $this->assertSame('keyWithCommentValue', $testConfig->keyWithComment);
         }
 
         if ($arrays) {
-            $this->assertIsArray(Config::getParam($key.'.array'));
-            $this->assertCount(2, Config::getParam($key.'.array'));
-            $this->assertSame('arrayValue1', Config::getParam($key.'.array')[0]);
-            $this->assertSame('arrayValue2', Config::getParam($key.'.array')[1]);
+            $this->assertNotNull($testConfig->array);
+            $this->assertIsArray($testConfig->array);
+            $this->assertCount(2, $testConfig->array);
+            $this->assertSame('arrayValue1', $testConfig->array[0]);
+            $this->assertSame('arrayValue2', $testConfig->array[1]);
         }
 
         if ($objects) {
-            $this->assertSame('nestedKeyValue', Config::getParam($key.'.nested.key'));
+            $this->assertNotNull($testConfig->nested);
+            $this->assertArrayHasKey('key', $testConfig->nested);
+            $this->assertSame('nestedKeyValue', $testConfig->nested['key']);
         }
-
-        $this->assertSame('defaultValue', Config::getParam($key.'.non-existing-key', 'defaultValue'));
-
-        // TODO: In future, improve test for more structures (empty object, empty array, more nested objects, nested array in object, nested object in array, numbers, floats, booleans, ..)
 
         // Always keep last
         $this->expectException(Load::class);
-        Config::load($key, __DIR__.'/non-existing.'.$extension, $adpater);
+        $config = new Config(new Loader(new File(__DIR__.'/../resources/non-existing.'.$extension), $adapter));
+        $testConfig = $config->load(TestConfig::class);
     }
 }

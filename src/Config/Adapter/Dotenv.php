@@ -1,9 +1,9 @@
 <?php
 
-namespace Utopia\Config\Adapters;
+namespace Utopia\Config\Adapter;
 
 use Utopia\Config\Adapter;
-use Utopia\Config\Exceptions\Parse;
+use Utopia\Config\Exception\Parse;
 
 class Dotenv extends Adapter
 {

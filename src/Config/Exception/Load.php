@@ -1,6 +1,6 @@
 <?php
 
-namespace Utopia\Config\Exceptions;
+namespace Utopia\Config\Exception;
 
 class Load extends \Exception
 {
