@@ -1,12 +1,37 @@
 <?php
 
-namespace Utopia\Config\Adapter;
+namespace Utopia\Config\Parser;
 
-use Utopia\Config\Adapter;
+use Utopia\Config\Parser;
 use Utopia\Config\Exception\Parse;
 
-class Dotenv extends Adapter
+class Dotenv extends Parser
 {
+    /**
+     * @var array<string> $truthyValues
+     */
+    protected array $truthyValues = ['1', 'true', 'yes', 'on', 'enabled'];
+
+    /**
+     * @var array<string> $falsyValues
+     */
+    protected array $falsyValues = ['0', 'false', 'no', 'off', 'disabled'];
+
+    /**
+     * @return string|bool
+     */
+    protected function convertValue(string $value): mixed
+    {
+        if (\in_array(\strtolower($value), $this->truthyValues)) {
+            return true;
+        }
+        if (\in_array(\strtolower($value), $this->falsyValues)) {
+            return false;
+        }
+
+        return $value;
+    }
+
     /**
      * @return array<string, mixed>
      */
@@ -38,7 +63,7 @@ class Dotenv extends Adapter
                 throw new Parse('Config file is not a valid dotenv file.');
             }
 
-            $config[$name] = $value;
+            $config[$name] = $this->convertValue($value);
         }
 
         return $config;

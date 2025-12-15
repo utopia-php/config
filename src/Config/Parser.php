@@ -4,7 +4,7 @@ namespace Utopia\Config;
 
 use Utopia\Config\Exception\Parse;
 
-abstract class Adapter
+abstract class Parser
 {
     /**
      * @return array<string, mixed>

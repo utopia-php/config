@@ -8,50 +8,36 @@ use Utopia\Config\Exception\Load;
 class Config
 {
     /**
-     * @var array<Loader>
-     */
-    protected array $loaders = [];
-
-    /**
-     * @param  array<Loader>|Loader  $loaders
-     */
-    public function __construct(mixed $loaders)
-    {
-        if (\is_array($loaders)) {
-            $this->loaders = $loaders;
-        } else {
-            $this->loaders = [$loaders];
-        }
-    }
-
-    /**
      * @template T of object
      *
      * @param  class-string<T>  $className
      * @return T
      */
-    public function load(string $className): mixed
+    public static function load(Source $source, Parser $parser, string $className): mixed
     {
-        if (empty($this->loaders)) {
-            throw new Load('No loaders specified. Add a loader with addLoader() method');
+        $contents = $source->getContents();
+        if ($contents === null) {
+            throw new Load('Loader returned null contents.');
         }
 
-        $data = [];
-        foreach ($this->loaders as $loader) {
-            $contents = $loader->getSource()->getContents();
-            if ($contents === null) {
-                throw new Load('Loader returned null contents.');
-            }
-
-            $data = array_merge($data, $loader->getAdapter()->parse($contents));
-        }
+        $data = $parser->parse($contents);
 
         $instance = new $className();
 
         $reflection = new \ReflectionClass($className);
+
+        if (\count($reflection->getMethods()) > 0) {
+            throw new Load("Class {$className} cannot have any functions.");
+        }
+
         foreach ($reflection->getProperties() as $property) {
             foreach ($property->getAttributes(Key::class) as $attribute) {
                 $key = $attribute->newInstance();
+
+                if(!$key->required && !\array_key_exists($key->name, $data)) {
+                    continue;
+                }
+                
                 $value = $data[$key->name] ?? null;
 
                 if ($key->required && $value === null) {

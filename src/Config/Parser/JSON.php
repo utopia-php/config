@@ -1,11 +1,11 @@
 <?php
 
-namespace Utopia\Config\Adapter;
+namespace Utopia\Config\Parser;
 
-use Utopia\Config\Adapter;
+use Utopia\Config\Parser;
 use Utopia\Config\Exception\Parse;
 
-class JSON extends Adapter
+class JSON extends Parser
 {
     /**
      * @return array<string, mixed>

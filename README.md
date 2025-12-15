@@ -20,7 +20,7 @@ composer require utopia-php/config
 
 require_once './vendor/autoload.php';
 
-use Utopia\Config\Adapter\JSON;
+use Utopia\Config\Parser\JSON;
 use Utopia\Config\Attribute\Key;
 use Utopia\Config\Config;
 use Utopia\Config\Exception\Load;
@@ -100,6 +100,71 @@ For above example to work, make sure to setup `config.json` file too:
   ]
 }
 ```
+
+Below is example how to combine multiple configs into one:
+```php
+<?php
+TODO: Make this work
+
+class FirewallConfig
+{
+    #[Key('ALLOW_IPS', new ArrayList(new Text(length: 100), length: 100), required: true)]
+    public string $allowIps;
+    
+    #[Key('CAPTCHA', new Whitelist(['enabled', 'disabled']), required: true)]
+    public string $captcha;
+}
+
+class CredentialsConfig
+{
+    #[Key('DATABASE_PASSWORD', new Text(length: 1024), required: true)]
+    public string $dbPass;
+    
+    #[Key('CACHE_PASSWORD', new Text(length: 1024), required: true)]
+    public string $cachePass;
+}
+
+class EnvironmentConfig
+{
+    #[Key('RATE_LIMIT_HITS', new Integer(loose: true), required: true)]
+    public int $abuseHits;
+    
+    #[Key('RATE_LIMIT_SECONDS', new Integer(loose: true), required: true)]
+    public string $abuseTime;   
+}
+
+class AppConfig
+{
+    #[Key('firewall', new Config(), required: true)]
+    public FirewallConfig $firewall;
+    
+    #[Key('credentials', new Config(), required: true)]
+    public CredentialsConfig $credentials;
+    
+    #[Key('environment', new Config(), required: true)]
+    public EnvironmentConfig $environment;
+}
+
+$config = Config::load(
+  new Variable([
+    'firewall' => Config::load(new File('firewall.json'), new JSON(), FirewallConfig::class),
+    'credentials' => Config::load(new File('credentials.yml'), new YAML(), CredentialsConfig::class),
+    'environment' => Config::load(new File('.env'), new JSON(), EnvironmentConfig::class),
+  ]),
+  new ConfigAdapter(),
+  AppConfig::class
+);
+
+\var_dump($config);
+// $config->firewall->allowIps
+// $config->credentials->dbPass
+// $config->environment->abuseHits
+```
+
+TODO: More examples for 100% class coverage for AI
+
+TODO: Unit tests for all adapters
+TODO: More E2E tests
 
 ## System Requirements
 
