@@ -3,14 +3,12 @@
 namespace Utopia\Config\Attribute;
 
 use Attribute;
-use Utopia\Validator;
 
 #[Attribute]
-class Key
+class ConfigKey
 {
     public function __construct(
-        public string $name,
-        public Validator $validator,
+        public string $name = '',
         public bool $required = true,
     ) {
     }

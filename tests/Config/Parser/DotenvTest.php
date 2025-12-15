@@ -1,6 +1,6 @@
 <?php
 
-namespace Utopia\Tests;
+namespace Utopia\Tests\Parser;
 
 use PHPUnit\Framework\TestCase;
 use Utopia\Config\Parser\Dotenv;

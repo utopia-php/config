@@ -3,6 +3,7 @@
 namespace Utopia\Tests;
 
 use PHPUnit\Framework\TestCase;
+use Utopia\Config\Attribute\ConfigKey;
 use Utopia\Config\Parser\Dotenv;
 use Utopia\Config\Parser\JSON;
 use Utopia\Config\Parser\PHP;
@@ -11,7 +12,9 @@ use Utopia\Config\Attribute\Key;
 use Utopia\Config\Config;
 use Utopia\Config\Exception\Load;
 use Utopia\Config\Parser;
+use Utopia\Config\Parser\None;
 use Utopia\Config\Source\File;
+use Utopia\Config\Source\Variable;
 use Utopia\Validator\Text;
 
 // Schemas used for configs in test scenarios
@@ -33,6 +36,18 @@ class TestConfig
     public string $envKey;
 }
 
+class TestGroupConfig
+{
+    #[ConfigKey]
+    public TestConfig $config1;
+
+    #[ConfigKey]
+    public TestConfig $config2;
+
+    #[Key('rootKey', new Text(1024, 0), required: true)]
+    public string $rootKey;
+}
+
 // Tests themselves
 class ConfigTest extends TestCase
 {
@@ -42,6 +57,29 @@ class ConfigTest extends TestCase
 
     protected function tearDown(): void
     {
+    }
+
+    public function testFileSource(): void
+    {
+        $config = Config::load(new File(__DIR__.'/../resources/config.json'), new JSON(), TestConfig::class);
+        $this->assertSame('customValue', $config->jsonKey);
+
+        // Always keep last
+        $this->expectException(Load::class);
+        $config = Config::load(new File(__DIR__.'/../resources/non-existing.json'), new JSON(), TestConfig::class);
+    }
+
+    public function testVariableSource(): void
+    {
+        $config = Config::load(new Variable([
+            'phpKey' => 'aValue',
+            'ENV_KEY' => 'aValue'
+        ]), new None(), TestConfig::class);
+        $this->assertSame('aValue', $config->phpKey);
+        $this->assertSame('aValue', $config->envKey);
+
+        $config = Config::load(new Variable("ENV_KEY=aValue"), new Dotenv(), TestConfig::class);
+        $this->assertSame('aValue', $config->envKey);
     }
 
     /**
@@ -92,9 +130,23 @@ class ConfigTest extends TestCase
         $config = Config::load(new File(__DIR__.'/../resources/config.'.$extension), $adapter, TestConfig::class);
 
         $this->assertSame('customValue', $config->$key);
-
-        // Always keep last
-        $this->expectException(Load::class);
-        $config = Config::load(new File(__DIR__.'/../resources/non-existing.'.$extension), $adapter, TestConfig::class);
     }
+
+    public function testSubConfigs(): void
+    {
+        $config1 = Config::load(new Variable('ENV_KEY=envValue'), new Dotenv(), TestConfig::class);
+        $config2 = Config::load(new Variable('yml_key: ymlValue'), new YAML(), TestConfig::class);
+
+        $config = Config::load(new Variable([
+            'config1' => $config1,
+            'config2' => $config2,
+            'rootKey' => 'rootValue',
+        ]), new None(), TestGroupConfig::class);
+
+        $this->assertSame('rootValue', $config->rootKey);
+        $this->assertSame('envValue', $config->config1->envKey);
+        $this->assertSame('ymlValue', $config->config2->ymlKey);
+    }
+
+    // TODO: Assert all exceptions
 }
