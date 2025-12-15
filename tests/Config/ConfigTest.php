@@ -48,13 +48,13 @@ class TestGroupConfig
     public string $rootKey;
 }
 
-class TestConigRequired
+class TestConfigRequired
 {
     #[Key('key', new Text(8, 0), required: true)]
     public string $key;
 }
 
-class TestConigWithMethod
+class TestConfigWithMethod
 {
     #[Key('key', new Text(1024, 0))]
     public string $key;
@@ -65,14 +65,14 @@ class TestConigWithMethod
     }
 }
 
-class TestConigWithoutType
+class TestConfigWithoutType
 {
     // PHPStan ignore because we intentionally test this; at runtime we ensire type is required
     #[Key('key', new Text(1024, 0))]
     public $key; // /** @phpstan-ignore missingType.property */
 }
 
-class TestConigWithExtraProperties
+class TestConfigWithExtraProperties
 {
     #[Key('KEY', new Text(1024, 0))]
     public string $key;
@@ -95,10 +95,12 @@ class ConfigTest extends TestCase
     {
         $config = Config::load(new File(__DIR__.'/../resources/config.json'), new JSON(), TestConfig::class);
         $this->assertSame('customValue', $config->jsonKey);
+    }
 
-        // Always keep last
+    public function testFileSourceException(): void
+    {
         $this->expectException(Load::class);
-        $config = Config::load(new File(__DIR__.'/../resources/non-existing.json'), new JSON(), TestConfig::class);
+        Config::load(new File(__DIR__.'/../resources/non-existing.json'), new JSON(), TestConfig::class);
     }
 
     public function testVariableSource(): void
@@ -180,14 +182,33 @@ class ConfigTest extends TestCase
         $this->assertSame('ymlValue', $config->config2->ymlKey);
     }
 
-    public function testExceptions(): void
+    public function testExceptionWithMethod(): void
     {
         $this->expectException(Load::class);
+        Config::load(new Variable('KEY=value'), new Dotenv(), TestConfigWithMethod::class);
+    }
 
-        Config::load(new Variable('KEY=value'), new Dotenv(), TestConigWithMethod::class);
-        Config::load(new Variable('KEY=value'), new Dotenv(), TestConigWithExtraProperties::class);
-        Config::load(new Variable('KEY=tool_long_value_that_will_not_get_accepted'), new Dotenv(), TestConigRequired::class);
-        Config::load(new Variable('SOME_OTHER_KEY=value'), new Dotenv(), TestConigRequired::class);
-        Config::load(new Variable('KEY=value'), new Dotenv(), TestConigWithoutType::class);
+    public function testExceptionWithExtraProperties(): void
+    {
+        $this->expectException(Load::class);
+        Config::load(new Variable('KEY=value'), new Dotenv(), TestConfigWithExtraProperties::class);
+    }
+
+    public function testExceptionValidator(): void
+    {
+        $this->expectException(Load::class);
+        Config::load(new Variable('KEY=tool_long_value_that_will_not_get_accepted'), new Dotenv(), TestConfigRequired::class);
+    }
+
+    public function testExceptionRequired(): void
+    {
+        $this->expectException(Load::class);
+        Config::load(new Variable('SOME_OTHER_KEY=value'), new Dotenv(), TestConfigRequired::class);
+    }
+
+    public function testExceptionWithoutType(): void
+    {
+        $this->expectException(Load::class);
+        Config::load(new Variable('KEY=value'), new Dotenv(), TestConfigWithoutType::class);
     }
 }

@@ -5,6 +5,7 @@ namespace Utopia\Config\Parser;
 use Utopia\Config\Parser;
 use Utopia\Config\Exception\Parse;
 
+// TODO: Once important, handle quoted values to allow symbol # in values
 class Dotenv extends Parser
 {
     /**

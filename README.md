@@ -101,7 +101,7 @@ For above example to work, make sure to setup `config.json` file too:
 }
 ```
 
-Alternatively, you can load conigs directly from a variable:
+Alternatively, you can load configs directly from a variable:
 
 ```php
 
@@ -137,8 +137,11 @@ Below is example how to combine multiple configs into one:
 <?php
 class FirewallConfig
 {
+    /**
+     * @var array<string> $allowIps
+     */
     #[Key('ALLOW_IPS', new ArrayList(new Text(length: 100), length: 100), required: true)]
-    public string $allowIps;
+    public array $allowIps;
     
     #[Key('CAPTCHA', new Whitelist(['enabled', 'disabled']), required: true)]
     public string $captcha;
@@ -159,7 +162,7 @@ class EnvironmentConfig
     public int $abuseHits;
     
     #[Key('RATE_LIMIT_SECONDS', new Integer(loose: true), required: true)]
-    public string $abuseTime;   
+    public int $abuseTime;   
 }
 
 class AppConfig
@@ -178,9 +181,9 @@ $config = Config::load(
   new Variable([
     'firewall' => Config::load(new File('firewall.json'), new JSON(), FirewallConfig::class),
     'credentials' => Config::load(new File('credentials.yml'), new YAML(), CredentialsConfig::class),
-    'environment' => Config::load(new File('.env'), new JSON(), EnvironmentConfig::class),
+    'environment' => Config::load(new File('.env'), new Dotenv(), EnvironmentConfig::class),
   ]),
-  new ConfigAdapter(),
+  new None(),
   AppConfig::class
 );
 

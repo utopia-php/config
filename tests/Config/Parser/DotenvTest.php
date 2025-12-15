@@ -45,13 +45,27 @@ class DotenvTest extends TestCase
         $this->assertNull($data["NULL_VALUE"]);
     }
 
-    public function testDotenvParseException(): void
+    public function testDotenvParseExceptionInvalid(): void
     {
         $this->expectException(Parse::class);
-
         $this->parser->parse('=b');
+    }
+
+    public function testDotenvParseExceptionNumber(): void
+    {
+        $this->expectException(Parse::class);
         $this->parser->parse(12);
+    }
+
+    public function testDotenvParseExceptionBoolean(): void
+    {
+        $this->expectException(Parse::class);
         $this->parser->parse(false);
+    }
+
+    public function testDotenvParseExceptionNull(): void
+    {
+        $this->expectException(Parse::class);
         $this->parser->parse(null);
     }
 

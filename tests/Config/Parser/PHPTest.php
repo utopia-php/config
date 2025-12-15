@@ -136,16 +136,46 @@ class PHPTest extends TestCase
         $this->assertCount(0, $data["empty_object"]);
     }
 
-    public function testPHPParseException(): void
+    public function testPHPParseExceptionMissingStart(): void
     {
         $this->expectException(Parse::class);
-
         $this->parser->parse('return [];');
+    }
+
+    public function testPHPParseExceptionMissingCode(): void
+    {
+        $this->expectException(Parse::class);
         $this->parser->parse('<?php');
+    }
+
+    public function testPHPParseExceptionWrongSyntax(): void
+    {
+        $this->expectException(Parse::class);
         $this->parser->parse('<?php return [};');
+    }
+
+    public function testPHPParseExceptionEmptyString(): void
+    {
+        $this->expectException(Parse::class);
         $this->parser->parse("");
+    }
+
+    public function testPHPParseExceptionNumber(): void
+    {
+        $this->expectException(Parse::class);
         $this->parser->parse(12);
+    }
+
+
+    public function testPHPParseExceptionBoolean(): void
+    {
+        $this->expectException(Parse::class);
         $this->parser->parse(false);
+    }
+
+    public function testPHPParseExceptionNull(): void
+    {
+        $this->expectException(Parse::class);
         $this->parser->parse(null);
     }
 

@@ -13,7 +13,7 @@ class PHP extends Parser
     public function parse(mixed $contents): array
     {
         if (!\is_string($contents)) {
-            throw new Parse('Contents must be a string.');
+            throw new Parse("Contents must be a string.");
         }
 
         $tempPath = \tempnam(\sys_get_temp_dir(), "utopia_config_");
@@ -25,8 +25,13 @@ class PHP extends Parser
             throw new Parse("Failed to write PHP config to temporary file.");
         }
 
-        $contents = include $tempPath;
-        unlink($tempPath);
+        try {
+            $contents = include $tempPath;
+        } catch (\Throwable $e) {
+            throw new Parse("Failed to parse PHP config file: " . $e->getMessage());
+        } finally {
+            unlink($tempPath);
+        }
 
         if (!\is_array($contents)) {
             throw new Parse("PHP config file must return an array.");

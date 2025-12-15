@@ -40,13 +40,27 @@ class NoneTest extends TestCase
         $this->assertNull($data["null"]);
     }
 
-    public function testNoneParseException(): void
+    public function testNoneParseExceptionNull(): void
     {
         $this->expectException(Parse::class);
-
         $data = $this->parser->parse(null);
+    }
+
+    public function testNoneParseExceptionString(): void
+    {
+        $this->expectException(Parse::class);
         $data = $this->parser->parse("hello");
+    }
+
+    public function testNoneParseExceptionBoolean(): void
+    {
+        $this->expectException(Parse::class);
         $data = $this->parser->parse(false);
+    }
+
+    public function testNoneParseExceptionNumber(): void
+    {
+        $this->expectException(Parse::class);
         $data = $this->parser->parse(12);
     }
 

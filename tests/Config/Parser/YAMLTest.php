@@ -133,13 +133,27 @@ class YAMLTest extends TestCase
         $this->assertCount(0, $data["empty_object"]);
     }
 
-    public function testYAMLParseException(): void
+    public function testYAMLParseExceptionInvalid(): void
     {
         $this->expectException(Parse::class);
+        $this->parser->parse(':value');
+    }
 
-        $this->parser->parse('-123: ');
+    public function testYAMLParseExceptionNumber(): void
+    {
+        $this->expectException(Parse::class);
         $this->parser->parse(12);
+    }
+
+    public function testYAMLParseExceptionBoolean(): void
+    {
+        $this->expectException(Parse::class);
         $this->parser->parse(false);
+    }
+
+    public function testYAMLParseExceptionNull(): void
+    {
+        $this->expectException(Parse::class);
         $this->parser->parse(null);
     }
 

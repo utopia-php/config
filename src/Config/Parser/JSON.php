@@ -22,7 +22,7 @@ class JSON extends Parser
 
         $config = \json_decode($contents, true);
 
-        if (\is_null($config)) {
+        if (\is_null($config) || \json_last_error() !== JSON_ERROR_NONE) {
             throw new Parse('Config file is not a valid JSON file.');
         }
 

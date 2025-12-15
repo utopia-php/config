@@ -129,13 +129,27 @@ class JSONTest extends TestCase
         $this->assertCount(0, $data["empty_object"]);
     }
 
-    public function testJSONParseException(): void
+    public function testJSONParseExceptionInvalid(): void
     {
         $this->expectException(Parse::class);
-
         $this->parser->parse('{"invalid": json}');
+    }
+
+    public function testJSONParseExceptionNumber(): void
+    {
+        $this->expectException(Parse::class);
         $this->parser->parse(12);
+    }
+
+    public function testJSONParseExceptionBoolean(): void
+    {
+        $this->expectException(Parse::class);
         $this->parser->parse(false);
+    }
+
+    public function testJSONParseExceptionNull(): void
+    {
+        $this->expectException(Parse::class);
         $this->parser->parse(null);
     }
 
