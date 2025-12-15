@@ -10,8 +10,16 @@ class JSON extends Parser
     /**
      * @return array<string, mixed>
      */
-    public function parse(string $contents): array
+    public function parse(mixed $contents): array
     {
+        if (!\is_string($contents)) {
+            throw new Parse('Contents must be a string.');
+        }
+
+        if (empty($contents)) {
+            return [];
+        }
+
         $config = \json_decode($contents, true);
 
         if (\is_null($config)) {

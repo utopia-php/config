@@ -10,8 +10,12 @@ class PHP extends Parser
     /**
      * @return array<string, mixed>
      */
-    public function parse(string $contents): array
+    public function parse(mixed $contents): array
     {
+        if (!\is_string($contents)) {
+            throw new Parse('Contents must be a string.');
+        }
+
         $tempPath = \tempnam(\sys_get_temp_dir(), "utopia_config_");
         if ($tempPath === false) {
             throw new Parse("Failed to create temporary file for PHP config.");

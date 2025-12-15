@@ -3,6 +3,7 @@
 namespace Utopia\Tests\Parser;
 
 use PHPUnit\Framework\TestCase;
+use Utopia\Config\Exception\Parse;
 use Utopia\Config\Parser\Dotenv;
 
 class DotenvTest extends TestCase
@@ -18,19 +19,49 @@ class DotenvTest extends TestCase
     {
     }
 
-    public function testDotenv(): void
+    public function testDotenvBasicTypes(): void
     {
-        $data = $this->parser->parse(
-            <<<DOTENV
-            HOST=127.0.0.1
-            PORT=3306
-            DOTENV
-            ,
-        );
+        $dotenv = <<<DOTENV
+          STRING=hello world
+          UNICODE_STRING=ä你こحب🌍
+          INTEGER=42
+          FLOAT=3.14159
+          NEGATIVE=-50
+          BOOLEAN_TRUE=true
+          BOOLEAN_FALSE=false
+          NULL_VALUE=null
+        DOTENV;
 
-        $this->assertSame("127.0.0.1", $data["HOST"]);
-        $this->assertSame("3306", $data["PORT"]);
-        $this->assertArrayNotHasKey("PASSWORD", $data);
+        $data = $this->parser->parse($dotenv);
+
+        $this->assertSame("hello world", $data["STRING"]);
+        $this->assertSame("ä你こحب🌍", $data["UNICODE_STRING"]);
+        $this->assertSame('42', $data["INTEGER"]);
+        $this->assertSame('3.14159', $data["FLOAT"]);
+        $this->assertSame('-50', $data["NEGATIVE"]);
+
+        $this->assertTrue($data["BOOLEAN_TRUE"]);
+        $this->assertFalse($data["BOOLEAN_FALSE"]);
+        $this->assertNull($data["NULL_VALUE"]);
+    }
+
+    public function testDotenvParseException(): void
+    {
+        $this->expectException(Parse::class);
+
+        $this->parser->parse('=b');
+        $this->parser->parse(12);
+        $this->parser->parse(false);
+        $this->parser->parse(null);
+    }
+
+    public function testDotenvEdgeCases(): void
+    {
+        $data = $this->parser->parse("");
+        $this->assertCount(0, $data);
+        $data = $this->parser->parse("KEY=");
+        $this->assertCount(1, $data);
+        $this->assertSame("", $data['KEY']);
     }
 
     public function testDotenvComment(): void
@@ -43,7 +74,6 @@ class DotenvTest extends TestCase
 
             PASSWORD=secret
             DOTENV
-            ,
         );
 
         $this->assertSame("127.0.0.1", $data["HOST"]);
@@ -51,36 +81,6 @@ class DotenvTest extends TestCase
         $this->assertSame("secret", $data["PASSWORD"]);
         $this->assertCount(3, \array_keys($data));
         $this->assertArrayNotHasKey("PASSWORD2", $data);
-    }
-
-    public function testDotenvKeys(): void
-    {
-        $data = $this->parser->parse(
-            <<<DOTENV
-            KEY1=value
-            key2=value
-            key-3=value
-            key_4=value
-            DOTENV
-            ,
-        );
-
-        $this->assertSame("value", $data["KEY1"]);
-        $this->assertSame("value", $data["key2"]);
-        $this->assertSame("value", $data["key-3"]);
-        $this->assertSame("value", $data["key_4"]);
-    }
-
-    public function testDotenvValues(): void
-    {
-        $data = $this->parser->parse(
-            <<<DOTENV
-            KEY1=Value- _123
-            DOTENV
-            ,
-        );
-
-        $this->assertSame("Value- _123", $data["KEY1"]);
     }
 
     public function testValueConvertor(): void
@@ -119,7 +119,6 @@ class DotenvTest extends TestCase
             KEY24=disagree # Preserves value
 
             DOTENV
-            ,
         );
 
         $expectedValues = [

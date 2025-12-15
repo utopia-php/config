@@ -11,5 +11,5 @@ abstract class Parser
      *
      * @throws Parse
      */
-    abstract public function parse(string $contents): array;
+    abstract public function parse(mixed $contents): array;
 }

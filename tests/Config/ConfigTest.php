@@ -48,6 +48,38 @@ class TestGroupConfig
     public string $rootKey;
 }
 
+class TestConigRequired
+{
+    #[Key('key', new Text(8, 0), required: true)]
+    public string $key;
+}
+
+class TestConigWithMethod
+{
+    #[Key('key', new Text(1024, 0))]
+    public string $key;
+
+    public function convertKey(): string
+    {
+        return \strtoupper($this->key);
+    }
+}
+
+class TestConigWithoutType
+{
+    // PHPStan ignore because we intentionally test this; at runtime we ensire type is required
+    #[Key('key', new Text(1024, 0))]
+    public $key; // /** @phpstan-ignore missingType.property */
+}
+
+class TestConigWithExtraProperties
+{
+    #[Key('KEY', new Text(1024, 0))]
+    public string $key;
+
+    public string $key2;
+}
+
 // Tests themselves
 class ConfigTest extends TestCase
 {
@@ -148,5 +180,14 @@ class ConfigTest extends TestCase
         $this->assertSame('ymlValue', $config->config2->ymlKey);
     }
 
-    // TODO: Assert all exceptions
+    public function testExceptions(): void
+    {
+        $this->expectException(Load::class);
+
+        Config::load(new Variable('KEY=value'), new Dotenv(), TestConigWithMethod::class);
+        Config::load(new Variable('KEY=value'), new Dotenv(), TestConigWithExtraProperties::class);
+        Config::load(new Variable('KEY=tool_long_value_that_will_not_get_accepted'), new Dotenv(), TestConigRequired::class);
+        Config::load(new Variable('SOME_OTHER_KEY=value'), new Dotenv(), TestConigRequired::class);
+        Config::load(new Variable('KEY=value'), new Dotenv(), TestConigWithoutType::class);
+    }
 }

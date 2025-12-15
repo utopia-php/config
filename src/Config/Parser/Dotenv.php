@@ -18,10 +18,14 @@ class Dotenv extends Parser
     protected array $falsyValues = ['0', 'false', 'no', 'off', 'disabled'];
 
     /**
-     * @return string|bool
+     * @return string|bool|null
      */
     protected function convertValue(string $value): mixed
     {
+        if (\strtolower($value) === "null") {
+            return null;
+        }
+
         if (\in_array(\strtolower($value), $this->truthyValues)) {
             return true;
         }
@@ -35,8 +39,16 @@ class Dotenv extends Parser
     /**
      * @return array<string, mixed>
      */
-    public function parse(string $contents): array
+    public function parse(mixed $contents): array
     {
+        if (!\is_string($contents)) {
+            throw new Parse('Contents must be a string.');
+        }
+
+        if (empty($contents)) {
+            return [];
+        }
+
         $config = [];
 
         $lines = \explode("\n", $contents);

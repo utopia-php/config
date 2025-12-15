@@ -101,11 +101,40 @@ For above example to work, make sure to setup `config.json` file too:
 }
 ```
 
+Alternatively, you can load conigs directly from a variable:
+
+```php
+
+<?php
+
+require_once './vendor/autoload.php';
+
+use Utopia\Config\Attribute\Key;
+use Utopia\Config\Config;
+use Utopia\Config\Loader;
+use Utopia\Config\Source\Variable;
+use Utopia\Config\Parser\None;
+use Utopia\Validator\Whitelist;
+
+class FirewallConfig
+{
+    #[Key('security-level', new Whitelist('high', 'low'), required: true)]
+    public string $securityLevel;
+}
+
+$loader = new Loader(new Variable([
+    'security-level' => 'high',
+]), new None);
+$config = new Config($loader);
+
+$firewallConfig = $config->load(FirewallConfig::class);
+\var_dump($firewallConfig);
+// $firewallConfig->securityLevel
+```
+
 Below is example how to combine multiple configs into one:
 ```php
 <?php
-TODO: Make this work
-
 class FirewallConfig
 {
     #[Key('ALLOW_IPS', new ArrayList(new Text(length: 100), length: 100), required: true)]
@@ -135,13 +164,13 @@ class EnvironmentConfig
 
 class AppConfig
 {
-    #[Key('firewall', new Config(), required: true)]
+    #[ConfigKey]
     public FirewallConfig $firewall;
     
-    #[Key('credentials', new Config(), required: true)]
+    #[ConfigKey]
     public CredentialsConfig $credentials;
     
-    #[Key('environment', new Config(), required: true)]
+    #[ConfigKey]
     public EnvironmentConfig $environment;
 }
 
@@ -160,11 +189,6 @@ $config = Config::load(
 // $config->credentials->dbPass
 // $config->environment->abuseHits
 ```
-
-TODO: More examples for 100% class coverage for AI
-
-TODO: Unit tests for all adapters
-TODO: More E2E tests
 
 ## System Requirements
 
