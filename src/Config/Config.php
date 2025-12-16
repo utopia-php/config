@@ -22,11 +22,11 @@ class Config
             throw new Load('Loader returned null contents.');
         }
 
-        $data = $parser->parse($contents);
+        $reflection = new \ReflectionClass($className);
+
+        $data = $parser->parse($contents, $reflection);
 
         $instance = new $className();
-
-        $reflection = new \ReflectionClass($className);
 
         if (\count($reflection->getMethods()) > 0) {
             throw new Load("Class {$className} cannot have any functions.");
@@ -39,11 +39,11 @@ class Config
                 $attributeFound = true;
                 $key = $attribute->newInstance();
 
-                if (!$key->required && !\array_key_exists($key->name, $data)) {
+                $value = self::resolveValue($data, $key->name);
+
+                if (!$key->required && $value === null) {
                     continue;
                 }
-
-                $value = $data[$key->name] ?? null;
 
                 if ($key->required && $value === null) {
                     throw new Load("Missing required key: {$key->name}");
@@ -71,11 +71,11 @@ class Config
                     $keyName = $property->name;
                 }
 
-                if (!$key->required && !\array_key_exists($keyName, $data)) {
+                $value = self::resolveValue($data, $keyName);
+
+                if (!$key->required && $value === null) {
                     continue;
                 }
-
-                $value = $data[$keyName] ?? null;
 
                 if ($key->required && $value === null) {
                     throw new Load("Missing required key: {$keyName}");
@@ -102,5 +102,59 @@ class Config
         }
 
         return $instance;
+    }
+
+    /**
+     * @param array<string, mixed> $data The data array to search in
+     * @return mixed|null The value if found, null otherwise
+     */
+    protected static function resolveValue(array $data, string $key): mixed
+    {
+        // Exact match
+        if (array_key_exists($key, $data)) {
+            return $data[$key];
+        }
+
+        // Dot notation
+        $parts = explode('.', $key);
+        return self::resolveValueRecursive($data, $parts, 0);
+    }
+
+    /**
+     * @param array<string, mixed> $data Current data context
+     * @param array<int, string> $parts Remaining parts of the key
+     * @return mixed|null The value if found, null otherwise
+     */
+    protected static function resolveValueRecursive(array $data, array $parts, int $index): mixed
+    {
+        if ($index >= count($parts)) {
+            return null;
+        }
+
+        if ($index === count($parts) - 1) {
+            return array_key_exists($parts[$index], $data) ? $data[$parts[$index]] : null;
+        }
+
+        for ($length = 1; $length <= count($parts) - $index; $length++) {
+            $keyParts = array_slice($parts, $index, $length);
+            $key = implode('.', $keyParts);
+
+            if (array_key_exists($key, $data)) {
+                $value = $data[$key];
+
+                if ($index + $length === count($parts)) {
+                    return $value;
+                }
+
+                if (is_array($value)) {
+                    $result = self::resolveValueRecursive($value, $parts, $index + $length);
+                    if ($result !== null) {
+                        return $result;
+                    }
+                }
+            }
+        }
+
+        return null;
     }
 }

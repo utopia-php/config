@@ -13,74 +13,12 @@ use Utopia\Config\Config;
 use Utopia\Config\Exception\Load;
 use Utopia\Config\Parser;
 use Utopia\Config\Parser\None;
+use Utopia\Config\Source\Environment;
 use Utopia\Config\Source\File;
 use Utopia\Config\Source\Variable;
+use Utopia\Validator\Boolean;
 use Utopia\Validator\Text;
 
-// Schemas used for configs in test scenarios
-class TestConfig
-{
-    #[Key('phpKey', new Text(1024, 0), required: false)]
-    public string $phpKey;
-
-    #[Key('jsonKey', new Text(1024, 0), required: false)]
-    public string $jsonKey;
-
-    #[Key('yaml-key', new Text(1024, 0), required: false)]
-    public string $yamlKey;
-
-    #[Key('yml_key', new Text(1024, 0), required: false)]
-    public string $ymlKey;
-
-    #[Key('ENV_KEY', new Text(1024, 0), required: false)]
-    public string $envKey;
-}
-
-class TestGroupConfig
-{
-    #[ConfigKey]
-    public TestConfig $config1;
-
-    #[ConfigKey]
-    public TestConfig $config2;
-
-    #[Key('rootKey', new Text(1024, 0), required: true)]
-    public string $rootKey;
-}
-
-class TestConfigRequired
-{
-    #[Key('key', new Text(8, 0), required: true)]
-    public string $key;
-}
-
-class TestConfigWithMethod
-{
-    #[Key('key', new Text(1024, 0))]
-    public string $key;
-
-    public function convertKey(): string
-    {
-        return \strtoupper($this->key);
-    }
-}
-
-class TestConfigWithoutType
-{
-    // PHPStan ignore because we intentionally test this; at runtime we ensire type is required
-    #[Key('key', new Text(1024, 0))]
-    public $key; // /** @phpstan-ignore missingType.property */
-}
-
-class TestConfigWithExtraProperties
-{
-    #[Key('KEY', new Text(1024, 0))]
-    public string $key;
-
-    public string $key2;
-}
-
-// Tests themselves
 class ConfigTest extends TestCase
 {
     protected function setUp(): void
@@ -114,6 +52,10 @@ class ConfigTest extends TestCase
 
         $config = Config::load(new Variable("ENV_KEY=aValue"), new Dotenv(), TestConfig::class);
         $this->assertSame('aValue', $config->envKey);
+
+        $config = Config::load(new Environment(), new None(), TestEnvConfig::class);
+        $this->assertSame('hello', $config->key1);
+        $this->assertSame('world', $config->key2);
     }
 
     /**
@@ -211,4 +153,131 @@ class ConfigTest extends TestCase
         $this->expectException(Load::class);
         Config::load(new Variable('KEY=value'), new Dotenv(), TestConfigWithoutType::class);
     }
+
+    public function testNestedValues(): void
+    {
+        $jsons = [
+           <<<JSON
+                {
+                "db.host": "docker.internal",
+                "db.config.tls": true
+                }
+            JSON,
+           <<<JSON
+                {
+                  "db": {
+                    "host": "docker.internal",
+                      "config": {
+                        "tls": true
+                      }
+                  }
+                }
+            JSON,
+           <<<JSON
+                {
+                  "db": {
+                    "host": "docker.internal",
+                      "config.tls": true
+                  }
+                }
+            JSON,
+           <<<JSON
+                {
+                  "db.host": "docker.internal",
+                  "db": {
+                      "config": {
+                        "tls": true
+                      }
+                  }
+                }
+            JSON,
+        ];
+
+        foreach ($jsons as $json) {
+            $config = Config::load(new Variable($json), new JSON(), TestNestedValueConfig::class);
+            $this->assertSame("docker.internal", $config->dbHost);
+            $this->assertSame(true, $config->tls);
+        }
+    }
+}
+
+// Schemas used for configs in test scenarios
+class TestConfig
+{
+    #[Key('phpKey', new Text(1024, 0), required: false)]
+    public string $phpKey;
+
+    #[Key('jsonKey', new Text(1024, 0), required: false)]
+    public string $jsonKey;
+
+    #[Key('yaml-key', new Text(1024, 0), required: false)]
+    public string $yamlKey;
+
+    #[Key('yml_key', new Text(1024, 0), required: false)]
+    public string $ymlKey;
+
+    #[Key('ENV_KEY', new Text(1024, 0), required: false)]
+    public string $envKey;
+}
+
+class TestGroupConfig
+{
+    #[ConfigKey]
+    public TestConfig $config1;
+
+    #[ConfigKey]
+    public TestConfig $config2;
+
+    #[Key('rootKey', new Text(1024, 0), required: true)]
+    public string $rootKey;
+}
+
+class TestEnvConfig
+{
+    #[Key('_UTOPIA_KEY1', new Text(8, 0), required: true)]
+    public string $key1;
+
+    #[Key('_UTOPIA_KEY2', new Text(8, 0), required: true)]
+    public string $key2;
+}
+
+class TestConfigRequired
+{
+    #[Key('key', new Text(8, 0), required: true)]
+    public string $key;
+}
+
+class TestConfigWithMethod
+{
+    #[Key('key', new Text(1024, 0))]
+    public string $key;
+
+    public function convertKey(): string
+    {
+        return \strtoupper($this->key);
+    }
+}
+
+class TestConfigWithoutType
+{
+    // PHPStan ignore because we intentionally test this; at runtime we ensire type is required
+    #[Key('key', new Text(1024, 0))]
+    public $key; // /** @phpstan-ignore missingType.property */
+}
+
+class TestConfigWithExtraProperties
+{
+    #[Key('KEY', new Text(1024, 0))]
+    public string $key;
+
+    public string $key2;
+}
+
+class TestNestedValueConfig
+{
+    #[Key('db.host', new Text(1024), required: true)]
+    public string $dbHost;
+
+    #[Key('db.config.tls', new Boolean(), required: true)]
+    public bool $tls;
 }

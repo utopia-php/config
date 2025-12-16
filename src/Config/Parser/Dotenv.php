@@ -2,6 +2,8 @@
 
 namespace Utopia\Config\Parser;
 
+use ReflectionAttribute;
+use Utopia\Config\Attribute\Key;
 use Utopia\Config\Parser;
 use Utopia\Config\Exception\Parse;
 
@@ -21,26 +23,25 @@ class Dotenv extends Parser
     /**
      * @return string|bool|null
      */
-    protected function convertValue(string $value): mixed
+    protected function convertValue(string $value, string $type): mixed
     {
-        if (\strtolower($value) === "null") {
-            return null;
-        }
-
-        if (\in_array(\strtolower($value), $this->truthyValues)) {
-            return true;
-        }
-        if (\in_array(\strtolower($value), $this->falsyValues)) {
-            return false;
+        if ($type === 'bool') {
+            if (\in_array(\strtolower($value), $this->truthyValues)) {
+                return true;
+            }
+            if (\in_array(\strtolower($value), $this->falsyValues)) {
+                return false;
+            }
         }
 
         return $value;
     }
 
     /**
+    * @param \ReflectionClass<covariant object>|null $reflection
      * @return array<string, mixed>
      */
-    public function parse(mixed $contents): array
+    public function parse(mixed $contents, ?\ReflectionClass $reflection = null): array
     {
         if (!\is_string($contents)) {
             throw new Parse('Contents must be a string.');
@@ -76,7 +77,31 @@ class Dotenv extends Parser
                 throw new Parse('Config file is not a valid dotenv file.');
             }
 
-            $config[$name] = $this->convertValue($value);
+            // Smart type-casting
+            if ($reflection !== null) {
+                $reflectionProperty = null;
+                foreach ($reflection->getProperties() as $property) {
+                    foreach ($property->getAttributes(Key::class, ReflectionAttribute::IS_INSTANCEOF) as $attribute) {
+                        $key = $attribute->newInstance();
+                        if ($key->name === $name) {
+                            $reflectionProperty = $property;
+                            break 2;
+                        }
+                    }
+                }
+                if ($reflectionProperty !== null) {
+                    $reflectionType = $reflectionProperty->getType();
+                    if ($reflectionType !== null && \method_exists($reflectionType, 'getName')) {
+                        $value = $this->convertValue($value, $reflectionType->getName());
+                    }
+                }
+            }
+
+            if (\is_string($value) && \strtolower($value) === "null") {
+                $value = null;
+            }
+
+            $config[$name] = $value;
         }
 
         return $config;

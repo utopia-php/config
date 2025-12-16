@@ -25,7 +25,6 @@ use Utopia\Config\Attribute\Key;
 use Utopia\Config\Config;
 use Utopia\Config\Exception\Load;
 use Utopia\Config\Exception\Parse;
-use Utopia\Config\Loader;
 use Utopia\Config\Source\File;
 use Utopia\Validator\ArrayList;
 use Utopia\Validator\Integer;
@@ -35,49 +34,49 @@ use Utopia\Validator\Text;
 
 class DatabaseConfig
 {
-    #[Key('DB_HOST', new Text(length: 1024), required: true)]
+    #[Key('db.host', new Text(length: 1024), required: true)]
     public string $host;
 
-    #[Key('DB_PORT', new Integer(loose: true), required: false)]
+    #[Key('db.port', new Integer(loose: true), required: false)]
     public ?int $port;
 
-    #[Key('DB_USERNAME', new Text(length: 1024), required: true)]
+    #[Key('db.username', new Text(length: 1024), required: true)]
     public string $username;
 
-    #[Key('DB_PASSWORD', new Text(length: 1024), required: true)]
+    #[Key('db.password', new Text(length: 1024), required: true)]
     public string $password;
-
-    #[Key('DB_NAME', new Nullable(new Text(length: 1024)), required: true)]
+    
+    #[Key('db.name', new Nullable(new Text(length: 1024)), required: true)]
     public ?string $name;
 
     /**
      * @var array<string, mixed> $config
      */
-    #[Key('DB_CONFIG', new Nullable(new JSONValidator), required: true)]
+    #[Key('db.config', new Nullable(new JSONValidator), required: true)]
     public ?array $config;
 
     /**
      * @var array<string> $whitelistIps
      */
-    #[Key('DB_WHITELIST_IPS', new ArrayList(new Text(length: 100), length: 100), required: true)]
+    #[Key('db.whitelistIps', new ArrayList(new Text(length: 100), length: 100), required: true)]
     public array $whitelistIps;
 }
 
-$loader = new Loader(new File(__DIR__.'/config.json'), new JSON);
-$config = new Config($loader);
+$source = new File(__DIR__.'/config.json');
+$parser = new JSON();
 
 try {
-    $dbConfig = $config->load(DatabaseConfig::class);
+    $config = Config::load($source, $parser, DatabaseConfig::class);
 } catch (Load $err) {
     exit('Config could not be loaded from a file: ' . $err->getMessage());
 } catch (Parse $err) {
     exit('Config could not be parsed as JSON: ' . $err->getMessage());
 }
 
-\var_dump($dbConfig);
-// $dbConfig->host
-// $dbConfig->port
-// $dbConfig->username
+\var_dump($config);
+// $config->host
+// $config->port
+// $config->username
 // ...
 ```
 
@@ -85,16 +84,18 @@ For above example to work, make sure to setup `config.json` file too:
 
 ```json
 {
-  "DB_HOST": "127.0.0.1",
-  "DB_PORT": 3306,
-  "DB_USERNAME": "root",
-  "DB_PASSWORD": "password",
-  "DB_NAME": "utopia",
-  "DB_CONFIG": {
+  "db.host": "127.0.0.1",
+  "db": {
+    "port": 3306,
+    "username": "root",
+    "db.password": "password",
+    "db.name": "utopia",
+  },
+  "db.config": {
     "timeout": 3000,
     "handshakeTimeout": 5000
   },
-  "DB_WHITELIST_IPS": [
+  "db.whitelistIps": [
     "127.0.0.1",
     "172.17.0.0/16"
   ]
@@ -111,7 +112,6 @@ require_once './vendor/autoload.php';
 
 use Utopia\Config\Attribute\Key;
 use Utopia\Config\Config;
-use Utopia\Config\Loader;
 use Utopia\Config\Source\Variable;
 use Utopia\Config\Parser\None;
 use Utopia\Validator\Whitelist;
@@ -122,14 +122,15 @@ class FirewallConfig
     public string $securityLevel;
 }
 
-$loader = new Loader(new Variable([
-    'security-level' => 'high',
-]), new None);
-$config = new Config($loader);
-
-$firewallConfig = $config->load(FirewallConfig::class);
+$config = Config::load(
+    source: new Variable([
+        'security-level' => 'high',
+    ]),
+    parser: new None(),
+    FirewallConfig::class
+);
 \var_dump($firewallConfig);
-// $firewallConfig->securityLevel
+// $config->securityLevel
 ```
 
 Below is example how to combine multiple configs into one:
@@ -191,6 +192,31 @@ $config = Config::load(
 // $config->firewall->allowIps
 // $config->credentials->dbPass
 // $config->environment->abuseHits
+```
+
+You can also load environment variables instead of reading dotenv file:
+
+```php
+<?php
+
+use Utopia\Config\Config;
+use Utopia\Config\Source\Environment;
+use Utopia\Config\Parser\None;
+
+class CredentialsConfig
+{
+    #[Key('DATABASE_PASSWORD', new Text(length: 1024), required: true)]
+    public string $dbPass;
+    
+    #[Key('CACHE_PASSWORD', new Text(length: 1024), required: true)]
+    public string $cachePass;
+}
+
+$config = Config::load(new Environment(), new None(), CredentialsConfig::class);
+
+\var_dump($config);
+// $config->credentials->dbPass
+// $config->credentials->$cachePass
 ```
 
 ## System Requirements

@@ -10,7 +10,7 @@
     "scripts": {
         "lint": "./vendor/bin/pint --config pint.json --test",
         "format": "./vendor/bin/pint --config pint.json",
-        "tests": "vendor/bin/phpunit --configuration phpunit.xml",
+        "tests": "_UTOPIA_KEY1=hello _UTOPIA_KEY2=world vendor/bin/phpunit --configuration phpunit.xml",
         "check": "./vendor/bin/phpstan analyse --level 8 src tests"
     },
     "require": {

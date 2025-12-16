@@ -3,8 +3,12 @@
 namespace Utopia\Tests\Parser;
 
 use PHPUnit\Framework\TestCase;
+use Utopia\Config\Attribute\Key;
 use Utopia\Config\Exception\Parse;
 use Utopia\Config\Parser\Dotenv;
+use Utopia\Validator\AnyOf;
+use Utopia\Validator\Text;
+use Utopia\Validator\WhiteList;
 
 class DotenvTest extends TestCase
 {
@@ -40,8 +44,8 @@ class DotenvTest extends TestCase
         $this->assertSame('3.14159', $data["FLOAT"]);
         $this->assertSame('-50', $data["NEGATIVE"]);
 
-        $this->assertTrue($data["BOOLEAN_TRUE"]);
-        $this->assertFalse($data["BOOLEAN_FALSE"]);
+        $this->assertSame('true', $data["BOOLEAN_TRUE"]);
+        $this->assertSame('false', $data["BOOLEAN_FALSE"]);
         $this->assertNull($data["NULL_VALUE"]);
     }
 
@@ -131,8 +135,13 @@ class DotenvTest extends TestCase
 
             KEY23=agree # Preserves value
             KEY24=disagree # Preserves value
+            
+            KEY25=1
+            KEY26=0
+            KEY27=null
 
-            DOTENV
+            DOTENV,
+            new \ReflectionClass(TestValueConvertorConfig::class)
         );
 
         $expectedValues = [
@@ -162,6 +171,10 @@ class DotenvTest extends TestCase
             "KEY22" => "november",
             "KEY23" => "agree",
             "KEY24" => "disagree",
+
+            "KEY25" => "1",
+            "KEY26" => "0",
+            "KEY27" => null
         ];
 
         $this->assertCount(\count($expectedValues), \array_keys($data));
@@ -170,4 +183,88 @@ class DotenvTest extends TestCase
             $this->assertSame($value, $data[$key], "Failed for key: $key");
         }
     }
+}
+
+class TestValueConvertorConfig
+{
+    #[Key('KEY1', new AnyOf([new WhiteList([true, false]), new Text(1024)]), required: true)]
+    public bool $key1;
+
+    #[Key('KEY2', new AnyOf([new WhiteList([true, false]), new Text(1024)]), required: true)]
+    public bool $key2;
+
+    #[Key('KEY3', new AnyOf([new WhiteList([true, false]), new Text(1024)]), required: true)]
+    public bool $key3;
+
+    #[Key('KEY4', new AnyOf([new WhiteList([true, false]), new Text(1024)]), required: true)]
+    public bool $key4;
+
+    #[Key('KEY5', new AnyOf([new WhiteList([true, false]), new Text(1024)]), required: true)]
+    public bool $key5;
+
+    #[Key('KEY6', new AnyOf([new WhiteList([true, false]), new Text(1024)]), required: true)]
+    public bool $key6;
+
+    #[Key('KEY7', new AnyOf([new WhiteList([true, false]), new Text(1024)]), required: true)]
+    public bool $key7;
+
+    #[Key('KEY8', new AnyOf([new WhiteList([true, false]), new Text(1024)]), required: true)]
+    public bool $key8;
+
+    #[Key('KEY9', new AnyOf([new WhiteList([true, false]), new Text(1024)]), required: true)]
+    public bool $key9;
+
+    #[Key('KEY10', new AnyOf([new WhiteList([true, false]), new Text(1024)]), required: true)]
+    public bool $key10;
+
+    #[Key('KEY11', new AnyOf([new WhiteList([true, false]), new Text(1024)]), required: true)]
+    public bool $key11;
+
+    #[Key('KEY12', new AnyOf([new WhiteList([true, false]), new Text(1024)]), required: true)]
+    public bool $key12;
+
+    #[Key('KEY13', new AnyOf([new WhiteList([true, false]), new Text(1024)]), required: true)]
+    public bool $key13;
+
+    #[Key('KEY14', new AnyOf([new WhiteList([true, false]), new Text(1024)]), required: true)]
+    public bool $key14;
+
+    #[Key('KEY15', new AnyOf([new WhiteList([true, false]), new Text(1024)]), required: true)]
+    public bool $key15;
+
+    #[Key('KEY16', new AnyOf([new WhiteList([true, false]), new Text(1024)]), required: true)]
+    public bool $key16;
+
+    #[Key('KEY17', new AnyOf([new WhiteList([true, false]), new Text(1024)]), required: true)]
+    public bool $key17;
+
+    #[Key('KEY18', new AnyOf([new WhiteList([true, false]), new Text(1024)]), required: true)]
+    public bool $key18;
+
+    #[Key('KEY19', new AnyOf([new WhiteList([true, false]), new Text(1024)]), required: true)]
+    public bool $key19;
+
+    #[Key('KEY20', new AnyOf([new WhiteList([true, false]), new Text(1024)]), required: true)]
+    public bool $key20;
+
+    #[Key('KEY21', new AnyOf([new WhiteList([true, false]), new Text(1024)]), required: true)]
+    public bool $key21;
+
+    #[Key('KEY22', new AnyOf([new WhiteList([true, false]), new Text(1024)]), required: true)]
+    public bool $key22;
+
+    #[Key('KEY23', new AnyOf([new WhiteList([true, false]), new Text(1024)]), required: true)]
+    public bool $key23;
+
+    #[Key('KEY24', new AnyOf([new WhiteList([true, false]), new Text(1024)]), required: true)]
+    public bool $key24;
+
+    #[Key('KEY25', new AnyOf([new WhiteList([true, false]), new Text(1024)]), required: true)]
+    public string $key25;
+
+    #[Key('KEY26', new AnyOf([new WhiteList([true, false]), new Text(1024)]), required: true)]
+    public string $key26;
+
+    #[Key('KEY27', new AnyOf([new WhiteList([true, false]), new Text(1024)]), required: true)]
+    public string $key27;
 }

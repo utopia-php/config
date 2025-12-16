@@ -8,9 +8,10 @@ use Utopia\Config\Exception\Parse;
 class JSON extends Parser
 {
     /**
+    * @param \ReflectionClass<covariant object>|null $reflection
      * @return array<string, mixed>
      */
-    public function parse(mixed $contents): array
+    public function parse(mixed $contents, ?\ReflectionClass $reflection = null): array
     {
         if (!\is_string($contents)) {
             throw new Parse('Contents must be a string.');
