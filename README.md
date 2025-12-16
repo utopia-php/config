@@ -84,23 +84,25 @@ For above example to work, make sure to setup `config.json` file too:
 
 ```json
 {
-  "db.host": "127.0.0.1",
   "db": {
+    "host": "127.0.0.1",
     "port": 3306,
     "username": "root",
-    "db.password": "password",
-    "db.name": "utopia",
+    "password": "password",
+    "name": "utopia",
+    "config": {
+      "timeout": 3000,
+      "handshakeTimeout": 5000
+    },
+    "whitelistIps": [
+        "127.0.0.1",
+        "172.17.0.0/16"
+    ]
   },
-  "db.config": {
-    "timeout": 3000,
-    "handshakeTimeout": 5000
-  },
-  "db.whitelistIps": [
-    "127.0.0.1",
-    "172.17.0.0/16"
-  ]
 }
 ```
+
+> Notice dot notation is supported, and automatically finds nested objects.
 
 Alternatively, you can load configs directly from a variable:
 
@@ -129,7 +131,7 @@ $config = Config::load(
     parser: new None(),
     FirewallConfig::class
 );
-\var_dump($firewallConfig);
+\var_dump($config);
 // $config->securityLevel
 ```
 
@@ -215,8 +217,8 @@ class CredentialsConfig
 $config = Config::load(new Environment(), new None(), CredentialsConfig::class);
 
 \var_dump($config);
-// $config->credentials->dbPass
-// $config->credentials->$cachePass
+// $config->dbPass
+// $config->$cachePass
 ```
 
 ## System Requirements

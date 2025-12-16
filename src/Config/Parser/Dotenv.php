@@ -38,7 +38,7 @@ class Dotenv extends Parser
     }
 
     /**
-    * @param \ReflectionClass<covariant object>|null $reflection
+     * @param \ReflectionClass<covariant object>|null $reflection
      * @return array<string, mixed>
      */
     public function parse(mixed $contents, ?\ReflectionClass $reflection = null): array

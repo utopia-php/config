@@ -139,7 +139,7 @@ class ConfigTest extends TestCase
     public function testExceptionValidator(): void
     {
         $this->expectException(Load::class);
-        Config::load(new Variable('KEY=tool_long_value_that_will_not_get_accepted'), new Dotenv(), TestConfigRequired::class);
+        Config::load(new Variable('KEY=too_long_value_that_will_not_get_accepted'), new Dotenv(), TestConfigRequired::class);
     }
 
     public function testExceptionRequired(): void
@@ -260,7 +260,7 @@ class TestConfigWithMethod
 
 class TestConfigWithoutType
 {
-    // PHPStan ignore because we intentionally test this; at runtime we ensire type is required
+    // PHPStan ignore because we intentionally test this; at runtime we ensure type is required
     #[Key('key', new Text(1024, 0))]
     public $key; // /** @phpstan-ignore missingType.property */
 }
