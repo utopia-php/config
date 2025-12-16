@@ -3,146 +3,281 @@
 namespace Utopia\Tests;
 
 use PHPUnit\Framework\TestCase;
-use Utopia\Config\Adapter;
-use Utopia\Config\Adapters\Dotenv;
-use Utopia\Config\Adapters\JSON;
-use Utopia\Config\Adapters\PHP;
-use Utopia\Config\Adapters\YAML;
+use Utopia\Config\Attribute\ConfigKey;
+use Utopia\Config\Parser\Dotenv;
+use Utopia\Config\Parser\JSON;
+use Utopia\Config\Parser\PHP;
+use Utopia\Config\Parser\YAML;
+use Utopia\Config\Attribute\Key;
 use Utopia\Config\Config;
-use Utopia\Config\Exceptions\Load;
-
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
+use Utopia\Config\Exception\Load;
+use Utopia\Config\Parser;
+use Utopia\Config\Parser\None;
+use Utopia\Config\Source\Environment;
+use Utopia\Config\Source\File;
+use Utopia\Config\Source\Variable;
+use Utopia\Validator\Boolean;
+use Utopia\Validator\Text;
 
 class ConfigTest extends TestCase
 {
-    public function setUp(): void
-    {
-        // Used in some adapter tests (like PHP) to ensure values can be mirrored
-        Config::setParam('mirrored', 'mirroredValue');
-    }
-
-    public function tearDown(): void
+    protected function setUp(): void
     {
     }
 
-    public function testSetParam(): void
+    protected function tearDown(): void
     {
-        Config::setParam('key', 'value');
-        $this->assertSame('value', Config::getParam('key'));
-        $this->assertSame('default', Config::getParam('keyx', 'default'));
+    }
 
-        Config::setParam('key', 'value2');
-        $this->assertSame('value2', Config::getParam('key'));
+    public function testFileSource(): void
+    {
+        $config = Config::load(new File(__DIR__.'/../resources/config.json'), new JSON(), TestConfig::class);
+        $this->assertSame('customValue', $config->jsonKey);
+    }
 
-        Config::setParam('key2', 'value2');
-        $this->assertSame('value2', Config::getParam('key2'));
+    public function testFileSourceException(): void
+    {
+        $this->expectException(Load::class);
+        Config::load(new File(__DIR__.'/../resources/non-existing.json'), new JSON(), TestConfig::class);
+    }
 
-        Config::setParam('key3', ['key4' => 'value4']);
-        $this->assertSame(['key4' => 'value4'], Config::getParam('key3'));
-        $this->assertSame('value4', Config::getParam('key3.key4'));
-        $this->assertSame('default', Config::getParam('key3.keyx', 'default'));
-        $this->assertSame('default', Config::getParam('key3.key4.x', 'default'));
+    public function testVariableSource(): void
+    {
+        $config = Config::load(new Variable([
+            'phpKey' => 'aValue',
+            'ENV_KEY' => 'aValue'
+        ]), new None(), TestConfig::class);
+        $this->assertSame('aValue', $config->phpKey);
+        $this->assertSame('aValue', $config->envKey);
+
+        $config = Config::load(new Variable("ENV_KEY=aValue"), new Dotenv(), TestConfig::class);
+        $this->assertSame('aValue', $config->envKey);
+
+        $config = Config::load(new Environment(), new None(), TestEnvConfig::class);
+        $this->assertSame('hello', $config->key1);
+        $this->assertSame('world', $config->key2);
     }
 
     /**
      * @return array<mixed>
      */
-    public function proviteAdapterScenarios(): array
+    public static function provideAdapterScenarios(): array
     {
         return [
             [
                 'adapter' => PHP::class,
                 'extension' => 'php',
-                'mirroring' => true,
-                'comments' => true,
-                'arrays' => true,
-                'objects' => true,
+                'key' => 'phpKey'
             ],
             [
                 'adapter' => JSON::class,
                 'extension' => 'json',
-                'mirroring' => false,
-                'comments' => false,
-                'arrays' => true,
-                'objects' => true,
+                'key' => 'jsonKey'
             ],
             [
                 'adapter' => YAML::class,
                 'extension' => 'yaml',
-                'mirroring' => false,
-                'comments' => true,
-                'arrays' => true,
-                'objects' => true,
+                'key' => 'yamlKey'
             ],
             [
                 'adapter' => YAML::class,
                 'extension' => 'yml',
-                'mirroring' => false,
-                'comments' => true,
-                'arrays' => true,
-                'objects' => true,
+                'key' => 'ymlKey'
             ],
             [
                 'adapter' => Dotenv::class,
                 'extension' => 'env',
-                'mirroring' => false,
-                'comments' => true,
-                'arrays' => false,
-                'objects' => false,
+                'key' => 'envKey'
             ],
         ];
     }
 
     /**
      * @param  class-string  $adapter
-     * @param  string  $extension
-     * @param  bool  $mirroring
-     * @param  bool  $comments
-     * @param  bool  $arrays
-     * @param  bool  $objects
-     *
-     * @dataProvider proviteAdapterScenarios
+     * @dataProvider provideAdapterScenarios
      */
-    public function testAdapters(string $adapter, string $extension, bool $mirroring = true, bool $comments = true, bool $arrays = true, bool $objects = true): void
+    public function testAdapters(string $adapter, string $extension, string $key): void
     {
-        $key = $extension;
-
-        $adpater = new $adapter();
-        if (! ($adpater instanceof Adapter)) {
+        $adapter = new $adapter();
+        if (! ($adapter instanceof Parser)) {
             throw new \Exception('Test scenario includes invalid adapter.');
         }
 
-        Config::load($key, __DIR__.'/../resources/config.'.$extension, $adpater);
+        $config = Config::load(new File(__DIR__.'/../resources/config.'.$extension), $adapter, TestConfig::class);
 
-        $this->assertSame('keyValue', Config::getParam($key.'.key'));
-
-        if ($comments) {
-            $this->assertSame('keyWithCommentValue', Config::getParam($key.'.keyWithComment'));
-        }
-
-        if ($mirroring) {
-            $this->assertSame('mirroredValue', Config::getParam($key.'.mirrored'));
-        }
-
-        if ($arrays) {
-            $this->assertIsArray(Config::getParam($key.'.array'));
-            $this->assertCount(2, Config::getParam($key.'.array'));
-            $this->assertSame('arrayValue1', Config::getParam($key.'.array')[0]);
-            $this->assertSame('arrayValue2', Config::getParam($key.'.array')[1]);
-        }
-
-        if ($objects) {
-            $this->assertSame('nestedKeyValue', Config::getParam($key.'.nested.key'));
-        }
-
-        $this->assertSame('defaultValue', Config::getParam($key.'.non-existing-key', 'defaultValue'));
-
-        // TODO: In future, improve test for more structures (empty object, empty array, more nested objects, nested array in object, nested object in array, numbers, floats, booleans, ..)
-
-        // Always keep last
-        $this->expectException(Load::class);
-        Config::load($key, __DIR__.'/non-existing.'.$extension, $adpater);
+        $this->assertSame('customValue', $config->$key);
     }
+
+    public function testSubConfigs(): void
+    {
+        $config1 = Config::load(new Variable('ENV_KEY=envValue'), new Dotenv(), TestConfig::class);
+        $config2 = Config::load(new Variable('yml_key: ymlValue'), new YAML(), TestConfig::class);
+
+        $config = Config::load(new Variable([
+            'config1' => $config1,
+            'config2' => $config2,
+            'rootKey' => 'rootValue',
+        ]), new None(), TestGroupConfig::class);
+
+        $this->assertSame('rootValue', $config->rootKey);
+        $this->assertSame('envValue', $config->config1->envKey);
+        $this->assertSame('ymlValue', $config->config2->ymlKey);
+    }
+
+    public function testExceptionWithMethod(): void
+    {
+        $this->expectException(Load::class);
+        Config::load(new Variable('KEY=value'), new Dotenv(), TestConfigWithMethod::class);
+    }
+
+    public function testExceptionWithExtraProperties(): void
+    {
+        $this->expectException(Load::class);
+        Config::load(new Variable('KEY=value'), new Dotenv(), TestConfigWithExtraProperties::class);
+    }
+
+    public function testExceptionValidator(): void
+    {
+        $this->expectException(Load::class);
+        Config::load(new Variable('KEY=too_long_value_that_will_not_get_accepted'), new Dotenv(), TestConfigRequired::class);
+    }
+
+    public function testExceptionRequired(): void
+    {
+        $this->expectException(Load::class);
+        Config::load(new Variable('SOME_OTHER_KEY=value'), new Dotenv(), TestConfigRequired::class);
+    }
+
+    public function testExceptionWithoutType(): void
+    {
+        $this->expectException(Load::class);
+        Config::load(new Variable('KEY=value'), new Dotenv(), TestConfigWithoutType::class);
+    }
+
+    public function testNestedValues(): void
+    {
+        $jsons = [
+           <<<JSON
+                {
+                "db.host": "docker.internal",
+                "db.config.tls": true
+                }
+            JSON,
+           <<<JSON
+                {
+                  "db": {
+                    "host": "docker.internal",
+                      "config": {
+                        "tls": true
+                      }
+                  }
+                }
+            JSON,
+           <<<JSON
+                {
+                  "db": {
+                    "host": "docker.internal",
+                      "config.tls": true
+                  }
+                }
+            JSON,
+           <<<JSON
+                {
+                  "db.host": "docker.internal",
+                  "db": {
+                      "config": {
+                        "tls": true
+                      }
+                  }
+                }
+            JSON,
+        ];
+
+        foreach ($jsons as $json) {
+            $config = Config::load(new Variable($json), new JSON(), TestNestedValueConfig::class);
+            $this->assertSame("docker.internal", $config->dbHost);
+            $this->assertSame(true, $config->tls);
+        }
+    }
+}
+
+// Schemas used for configs in test scenarios
+class TestConfig
+{
+    #[Key('phpKey', new Text(1024, 0), required: false)]
+    public string $phpKey;
+
+    #[Key('jsonKey', new Text(1024, 0), required: false)]
+    public string $jsonKey;
+
+    #[Key('yaml-key', new Text(1024, 0), required: false)]
+    public string $yamlKey;
+
+    #[Key('yml_key', new Text(1024, 0), required: false)]
+    public string $ymlKey;
+
+    #[Key('ENV_KEY', new Text(1024, 0), required: false)]
+    public string $envKey;
+}
+
+class TestGroupConfig
+{
+    #[ConfigKey]
+    public TestConfig $config1;
+
+    #[ConfigKey]
+    public TestConfig $config2;
+
+    #[Key('rootKey', new Text(1024, 0), required: true)]
+    public string $rootKey;
+}
+
+class TestEnvConfig
+{
+    #[Key('_UTOPIA_KEY1', new Text(8, 0), required: true)]
+    public string $key1;
+
+    #[Key('_UTOPIA_KEY2', new Text(8, 0), required: true)]
+    public string $key2;
+}
+
+class TestConfigRequired
+{
+    #[Key('key', new Text(8, 0), required: true)]
+    public string $key;
+}
+
+class TestConfigWithMethod
+{
+    #[Key('key', new Text(1024, 0))]
+    public string $key;
+
+    public function convertKey(): string
+    {
+        return \strtoupper($this->key);
+    }
+}
+
+class TestConfigWithoutType
+{
+    // PHPStan ignore because we intentionally test this; at runtime we ensure type is required
+    #[Key('key', new Text(1024, 0))]
+    public $key; // /** @phpstan-ignore missingType.property */
+}
+
+class TestConfigWithExtraProperties
+{
+    #[Key('KEY', new Text(1024, 0))]
+    public string $key;
+
+    public string $key2;
+}
+
+class TestNestedValueConfig
+{
+    #[Key('db.host', new Text(1024), required: true)]
+    public string $dbHost;
+
+    #[Key('db.config.tls', new Boolean(), required: true)]
+    public bool $tls;
 }
