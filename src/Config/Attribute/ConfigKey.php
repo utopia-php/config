@@ -10,6 +10,5 @@ class ConfigKey
     public function __construct(
         public string $name = '',
         public bool $required = true,
-    ) {
-    }
+    ) {}
 }

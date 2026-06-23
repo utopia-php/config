@@ -2,8 +2,8 @@
 
 namespace Utopia\Config\Parser;
 
-use Utopia\Config\Parser;
 use Utopia\Config\Exception\Parse;
+use Utopia\Config\Parser;
 
 class YAML extends Parser
 {
@@ -14,7 +14,7 @@ class YAML extends Parser
     public function parse(mixed $contents, ?\ReflectionClass $reflection = null): array
     {
         if (!\is_string($contents)) {
-            throw new Parse("Contents must be a string.");
+            throw new Parse('Contents must be a string.');
         }
 
         if (empty($contents)) {
@@ -23,15 +23,15 @@ class YAML extends Parser
 
         $config = null;
         try {
-            $config = \yaml_parse($contents);
+            $config = yaml_parse($contents);
         } catch (\Throwable $e) {
             throw new Parse(
-                "Failed to parse YAML config file: " . $e->getMessage(),
+                'Failed to parse YAML config file: ' . $e->getMessage(),
             );
         }
 
         if ($config === false || $config === null || $config === $contents) {
-            throw new Parse("Config file is not a valid YAML file.");
+            throw new Parse('Config file is not a valid YAML file.');
         }
 
         // TODO: Consider to cast depending on reflection, similar to Dotenv

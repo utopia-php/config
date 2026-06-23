@@ -82,7 +82,7 @@ class Config
                 }
 
                 $expectedType = $property->getType();
-                if ($expectedType === null || !\method_exists($expectedType, 'getName')) {
+                if ($expectedType === null || !method_exists($expectedType, 'getName')) {
                     throw new Load("Property {$property->name} is missing a type.");
                 }
 
@@ -111,7 +111,7 @@ class Config
     protected static function resolveValue(array $data, string $key): mixed
     {
         // Exact match
-        if (array_key_exists($key, $data)) {
+        if (\array_key_exists($key, $data)) {
             return $data[$key];
         }
 
@@ -127,26 +127,26 @@ class Config
      */
     protected static function resolveValueRecursive(array $data, array $parts, int $index): mixed
     {
-        if ($index >= count($parts)) {
+        if ($index >= \count($parts)) {
             return null;
         }
 
-        if ($index === count($parts) - 1) {
-            return array_key_exists($parts[$index], $data) ? $data[$parts[$index]] : null;
+        if ($index === \count($parts) - 1) {
+            return \array_key_exists($parts[$index], $data) ? $data[$parts[$index]] : null;
         }
 
-        for ($length = 1; $length <= count($parts) - $index; $length++) {
-            $keyParts = array_slice($parts, $index, $length);
+        for ($length = 1; $length <= \count($parts) - $index; $length++) {
+            $keyParts = \array_slice($parts, $index, $length);
             $key = implode('.', $keyParts);
 
-            if (array_key_exists($key, $data)) {
+            if (\array_key_exists($key, $data)) {
                 $value = $data[$key];
 
-                if ($index + $length === count($parts)) {
+                if ($index + $length === \count($parts)) {
                     return $value;
                 }
 
-                if (is_array($value)) {
+                if (\is_array($value)) {
                     $result = self::resolveValueRecursive($value, $parts, $index + $length);
                     if ($result !== null) {
                         return $result;
