@@ -18,6 +18,7 @@ use Utopia\Config\Source\Environment;
 use Utopia\Config\Source\File;
 use Utopia\Config\Source\Variable;
 use Utopia\Validator\Boolean;
+use Utopia\Validator\Nullable;
 use Utopia\Validator\Text;
 
 class ConfigTest extends TestCase
@@ -196,6 +197,39 @@ class ConfigTest extends TestCase
             $this->assertSame(true, $config->tls);
         }
     }
+
+    public function testRequiredNullablePresentNull(): void
+    {
+        $config = Config::load(new Variable('{"name": null}'), new JSON(), TestNullableConfig::class);
+        $this->assertNull($config->name);
+    }
+
+    public function testRequiredNullableNestedPresentNull(): void
+    {
+        $config = Config::load(new Variable('{"db": {"name": null}}'), new JSON(), TestNestedNullableConfig::class);
+        $this->assertNull($config->dbName);
+    }
+
+    public function testOptionalNullablePresentNullIsAssigned(): void
+    {
+        $config = Config::load(new Variable('{"name": null}'), new JSON(), TestOptionalNullableConfig::class);
+        $this->assertNull($config->name);
+    }
+
+    public function testValueTypeMismatchThrowsLoad(): void
+    {
+        // A loose validator accepts the string, but assigning it to the int
+        // property would raise TypeError — the loader must surface Load instead.
+        $this->expectException(Load::class);
+        Config::load(new Variable('PORT=abc'), new Dotenv(), TestTypeMismatchConfig::class);
+    }
+
+    public function testConstructorArgumentThrowsLoad(): void
+    {
+        // A required constructor argument must not blow up as ArgumentCountError.
+        $this->expectException(Load::class);
+        Config::load(new Variable('KEY=value'), new Dotenv(), TestConstructorConfig::class);
+    }
 }
 
 // Schemas used for configs in test scenarios
@@ -277,4 +311,33 @@ class TestNestedValueConfig
 
     #[Key('db.config.tls', new Boolean(), required: true)]
     public bool $tls;
+}
+
+class TestNullableConfig
+{
+    #[Key('name', new Nullable(new Text(1024)), required: true)]
+    public ?string $name;
+}
+
+class TestNestedNullableConfig
+{
+    #[Key('db.name', new Nullable(new Text(1024)), required: true)]
+    public ?string $dbName;
+}
+
+class TestOptionalNullableConfig
+{
+    #[Key('name', new Nullable(new Text(1024)), required: false)]
+    public ?string $name = 'unset';
+}
+
+class TestTypeMismatchConfig
+{
+    #[Key('PORT', new Text(1024, 0), required: true)]
+    public int $port;
+}
+
+class TestConstructorConfig
+{
+    public function __construct(public string $required) {}
 }

@@ -99,6 +99,56 @@ class DotenvTest extends TestCase
         $this->assertArrayNotHasKey('PASSWORD2', $data);
     }
 
+    public function testDotenvLineWithoutEqualsThrows(): void
+    {
+        $this->expectException(Parse::class);
+        $this->parser->parse("HOST=127.0.0.1\nDATABASE_PASSWORD");
+    }
+
+    public function testDotenvHashInsideQuotesPreserved(): void
+    {
+        $data = $this->parser->parse(
+            <<<DOTENV
+            PASSWORD="abc#123"
+            TOKEN='x#y#z'
+            URL="https://example.com/path#fragment"
+            PLAIN=value # trailing comment
+            DOTENV
+        );
+
+        $this->assertSame('abc#123', $data['PASSWORD']);
+        $this->assertSame('x#y#z', $data['TOKEN']);
+        $this->assertSame('https://example.com/path#fragment', $data['URL']);
+        $this->assertSame('value', $data['PLAIN']);
+    }
+
+    public function testDotenvEscapedQuoteInsideValue(): void
+    {
+        $data = $this->parser->parse('KEY="abc\"#def"');
+        $this->assertSame('abc"#def', $data['KEY']);
+    }
+
+    public function testDotenvLiteralBackslashPreserved(): void
+    {
+        // \t is not a supported escape, so the backslash is kept verbatim
+        // (e.g. a Windows path); \\ collapses to a single backslash.
+        $data = $this->parser->parse("PATH=\"C:\\tmp\"\nESCAPED=\"a\\\\b\"");
+        $this->assertSame('C:\tmp', $data['PATH']);
+        $this->assertSame('a\b', $data['ESCAPED']);
+    }
+
+    public function testDotenvTrailingGarbageAfterQuoteThrows(): void
+    {
+        $this->expectException(Parse::class);
+        $this->parser->parse('KEY="prod"oops');
+    }
+
+    public function testDotenvUnterminatedQuoteThrows(): void
+    {
+        $this->expectException(Parse::class);
+        $this->parser->parse('KEY="abc');
+    }
+
     public function testValueConvertor(): void
     {
         $data = $this->parser->parse(

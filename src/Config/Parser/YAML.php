@@ -37,6 +37,6 @@ class YAML extends Parser
         // TODO: Consider to cast depending on reflection, similar to Dotenv
         // Source: https://softwareengineering.stackexchange.com/questions/387827/is-it-wrong-to-parse-yaml-true-as-a-string
 
-        return $config;
+        return $this->requireMap($config, 'Config file must decode to a YAML mapping.');
     }
 }

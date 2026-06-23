@@ -153,6 +153,26 @@ class JSONTest extends TestCase
         $this->parser->parse(null);
     }
 
+    public function testJSONScalarTopLevelThrows(): void
+    {
+        // Valid JSON, but not a config map — must raise Parse, not a TypeError.
+        foreach (['"foo"', '123', 'true', 'null'] as $scalar) {
+            try {
+                $this->parser->parse($scalar);
+                $this->fail("Expected Parse for scalar JSON input: {$scalar}");
+            } catch (Parse) {
+                $this->addToAssertionCount(1);
+            }
+        }
+    }
+
+    public function testJSONTopLevelListThrows(): void
+    {
+        // A non-empty list is not a config map (its keys would be 0, 1, 2, …).
+        $this->expectException(Parse::class);
+        $this->parser->parse('["secret", "other"]');
+    }
+
     public function testJSONEdgeCases(): void
     {
         $data = $this->parser->parse('');
