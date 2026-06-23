@@ -13,7 +13,7 @@ class None extends Parser
      */
     public function parse(mixed $contents, ?\ReflectionClass $reflection = null): array
     {
-        if (!is_array($contents)) {
+        if (!\is_array($contents)) {
             throw new Parse('Contents must be an array');
         }
 

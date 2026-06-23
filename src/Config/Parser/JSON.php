@@ -2,8 +2,8 @@
 
 namespace Utopia\Config\Parser;
 
-use Utopia\Config\Parser;
 use Utopia\Config\Exception\Parse;
+use Utopia\Config\Parser;
 
 class JSON extends Parser
 {
@@ -21,9 +21,9 @@ class JSON extends Parser
             return [];
         }
 
-        $config = \json_decode($contents, true);
+        $config = json_decode($contents, true);
 
-        if (\is_null($config) || \json_last_error() !== JSON_ERROR_NONE) {
+        if (\is_null($config) || json_last_error() !== JSON_ERROR_NONE) {
             throw new Parse('Config file is not a valid JSON file.');
         }
 

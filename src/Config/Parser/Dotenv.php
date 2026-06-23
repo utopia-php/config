@@ -4,8 +4,8 @@ namespace Utopia\Config\Parser;
 
 use ReflectionAttribute;
 use Utopia\Config\Attribute\Key;
-use Utopia\Config\Parser;
 use Utopia\Config\Exception\Parse;
+use Utopia\Config\Parser;
 
 // TODO: Once important, handle quoted values to allow symbol # in values
 class Dotenv extends Parser
@@ -26,10 +26,10 @@ class Dotenv extends Parser
     protected function convertValue(string $value, string $type): mixed
     {
         if ($type === 'bool') {
-            if (\in_array(\strtolower($value), $this->truthyValues)) {
+            if (\in_array(strtolower($value), $this->truthyValues)) {
                 return true;
             }
-            if (\in_array(\strtolower($value), $this->falsyValues)) {
+            if (\in_array(strtolower($value), $this->falsyValues)) {
                 return false;
             }
         }
@@ -53,14 +53,14 @@ class Dotenv extends Parser
 
         $config = [];
 
-        $lines = \explode("\n", $contents);
+        $lines = explode("\n", $contents);
         foreach ($lines as $line) {
             // Remove everything after #
-            $pair = \strstr($line, '#', true);
+            $pair = strstr($line, '#', true);
             if ($pair === false) {
                 $pair = $line;
             }
-            $pair = \trim($pair);
+            $pair = trim($pair);
 
             // Empty line can be ignored (after removing comments)
             if (empty($pair)) {
@@ -68,9 +68,9 @@ class Dotenv extends Parser
             }
 
             // Split into KEY=value
-            $parts = \explode('=', $pair, 2);
-            $name = \trim($parts[0]);
-            $value = \trim($parts[1] ?? '');
+            $parts = explode('=', $pair, 2);
+            $name = trim($parts[0]);
+            $value = trim($parts[1] ?? '');
 
             // Missing name likely means bad syntax
             if (empty($name)) {
@@ -91,13 +91,13 @@ class Dotenv extends Parser
                 }
                 if ($reflectionProperty !== null) {
                     $reflectionType = $reflectionProperty->getType();
-                    if ($reflectionType !== null && \method_exists($reflectionType, 'getName')) {
+                    if ($reflectionType !== null && method_exists($reflectionType, 'getName')) {
                         $value = $this->convertValue($value, $reflectionType->getName());
                     }
                 }
             }
 
-            if (\is_string($value) && \strtolower($value) === "null") {
+            if (\is_string($value) && strtolower($value) === 'null') {
                 $value = null;
             }
 

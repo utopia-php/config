@@ -19,9 +19,7 @@ class DotenvTest extends TestCase
         $this->parser = new Dotenv();
     }
 
-    protected function tearDown(): void
-    {
-    }
+    protected function tearDown(): void {}
 
     public function testDotenvBasicTypes(): void
     {
@@ -38,15 +36,15 @@ class DotenvTest extends TestCase
 
         $data = $this->parser->parse($dotenv);
 
-        $this->assertSame("hello world", $data["STRING"]);
-        $this->assertSame("ä你こحب🌍", $data["UNICODE_STRING"]);
-        $this->assertSame('42', $data["INTEGER"]);
-        $this->assertSame('3.14159', $data["FLOAT"]);
-        $this->assertSame('-50', $data["NEGATIVE"]);
+        $this->assertSame('hello world', $data['STRING']);
+        $this->assertSame('ä你こحب🌍', $data['UNICODE_STRING']);
+        $this->assertSame('42', $data['INTEGER']);
+        $this->assertSame('3.14159', $data['FLOAT']);
+        $this->assertSame('-50', $data['NEGATIVE']);
 
-        $this->assertSame('true', $data["BOOLEAN_TRUE"]);
-        $this->assertSame('false', $data["BOOLEAN_FALSE"]);
-        $this->assertNull($data["NULL_VALUE"]);
+        $this->assertSame('true', $data['BOOLEAN_TRUE']);
+        $this->assertSame('false', $data['BOOLEAN_FALSE']);
+        $this->assertNull($data['NULL_VALUE']);
     }
 
     public function testDotenvParseExceptionInvalid(): void
@@ -75,11 +73,11 @@ class DotenvTest extends TestCase
 
     public function testDotenvEdgeCases(): void
     {
-        $data = $this->parser->parse("");
+        $data = $this->parser->parse('');
         $this->assertCount(0, $data);
-        $data = $this->parser->parse("KEY=");
+        $data = $this->parser->parse('KEY=');
         $this->assertCount(1, $data);
-        $this->assertSame("", $data['KEY']);
+        $this->assertSame('', $data['KEY']);
     }
 
     public function testDotenvComment(): void
@@ -94,11 +92,11 @@ class DotenvTest extends TestCase
             DOTENV
         );
 
-        $this->assertSame("127.0.0.1", $data["HOST"]);
-        $this->assertSame("3306", $data["PORT"]);
-        $this->assertSame("secret", $data["PASSWORD"]);
-        $this->assertCount(3, \array_keys($data));
-        $this->assertArrayNotHasKey("PASSWORD2", $data);
+        $this->assertSame('127.0.0.1', $data['HOST']);
+        $this->assertSame('3306', $data['PORT']);
+        $this->assertSame('secret', $data['PASSWORD']);
+        $this->assertCount(3, array_keys($data));
+        $this->assertArrayNotHasKey('PASSWORD2', $data);
     }
 
     public function testValueConvertor(): void
@@ -141,43 +139,43 @@ class DotenvTest extends TestCase
             KEY27=null
 
             DOTENV,
-            new \ReflectionClass(TestValueConvertorConfig::class)
+            new \ReflectionClass(TestValueConvertorConfig::class),
         );
 
         $expectedValues = [
-            "KEY1" => true,
-            "KEY2" => true,
-            "KEY3" => true,
-            "KEY4" => true,
-            "KEY5" => true,
-            "KEY6" => true,
-            "KEY7" => true,
+            'KEY1' => true,
+            'KEY2' => true,
+            'KEY3' => true,
+            'KEY4' => true,
+            'KEY5' => true,
+            'KEY6' => true,
+            'KEY7' => true,
 
-            "KEY8" => false,
-            "KEY9" => false,
-            "KEY10" => false,
-            "KEY11" => false,
-            "KEY12" => false,
-            "KEY13" => false,
-            "KEY14" => false,
+            'KEY8' => false,
+            'KEY9' => false,
+            'KEY10' => false,
+            'KEY11' => false,
+            'KEY12' => false,
+            'KEY13' => false,
+            'KEY14' => false,
 
-            "KEY15" => "11",
-            "KEY16" => "20",
-            "KEY17" => "online",
-            "KEY18" => "offline",
-            "KEY19" => "notenabled",
-            "KEY20" => "notdisabled",
-            "KEY21" => "yesterday",
-            "KEY22" => "november",
-            "KEY23" => "agree",
-            "KEY24" => "disagree",
+            'KEY15' => '11',
+            'KEY16' => '20',
+            'KEY17' => 'online',
+            'KEY18' => 'offline',
+            'KEY19' => 'notenabled',
+            'KEY20' => 'notdisabled',
+            'KEY21' => 'yesterday',
+            'KEY22' => 'november',
+            'KEY23' => 'agree',
+            'KEY24' => 'disagree',
 
-            "KEY25" => "1",
-            "KEY26" => "0",
-            "KEY27" => null
+            'KEY25' => '1',
+            'KEY26' => '0',
+            'KEY27' => null,
         ];
 
-        $this->assertCount(\count($expectedValues), \array_keys($data));
+        $this->assertCount(\count($expectedValues), array_keys($data));
 
         foreach ($expectedValues as $key => $value) {
             $this->assertSame($value, $data[$key], "Failed for key: $key");

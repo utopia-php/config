@@ -12,6 +12,5 @@ class Key
         public string $name,
         public Validator $validator,
         public bool $required = true,
-    ) {
-    }
+    ) {}
 }

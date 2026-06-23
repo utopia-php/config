@@ -2,6 +2,4 @@
 
 namespace Utopia\Config\Exception;
 
-class Load extends \Exception
-{
-}
+class Load extends \Exception {}

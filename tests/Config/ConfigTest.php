@@ -2,17 +2,18 @@
 
 namespace Utopia\Tests;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Utopia\Config\Attribute\ConfigKey;
-use Utopia\Config\Parser\Dotenv;
-use Utopia\Config\Parser\JSON;
-use Utopia\Config\Parser\PHP;
-use Utopia\Config\Parser\YAML;
 use Utopia\Config\Attribute\Key;
 use Utopia\Config\Config;
 use Utopia\Config\Exception\Load;
 use Utopia\Config\Parser;
+use Utopia\Config\Parser\Dotenv;
+use Utopia\Config\Parser\JSON;
 use Utopia\Config\Parser\None;
+use Utopia\Config\Parser\PHP;
+use Utopia\Config\Parser\YAML;
 use Utopia\Config\Source\Environment;
 use Utopia\Config\Source\File;
 use Utopia\Config\Source\Variable;
@@ -21,36 +22,32 @@ use Utopia\Validator\Text;
 
 class ConfigTest extends TestCase
 {
-    protected function setUp(): void
-    {
-    }
+    protected function setUp(): void {}
 
-    protected function tearDown(): void
-    {
-    }
+    protected function tearDown(): void {}
 
     public function testFileSource(): void
     {
-        $config = Config::load(new File(__DIR__.'/../resources/config.json'), new JSON(), TestConfig::class);
+        $config = Config::load(new File(__DIR__ . '/../resources/config.json'), new JSON(), TestConfig::class);
         $this->assertSame('customValue', $config->jsonKey);
     }
 
     public function testFileSourceException(): void
     {
         $this->expectException(Load::class);
-        Config::load(new File(__DIR__.'/../resources/non-existing.json'), new JSON(), TestConfig::class);
+        Config::load(new File(__DIR__ . '/../resources/non-existing.json'), new JSON(), TestConfig::class);
     }
 
     public function testVariableSource(): void
     {
         $config = Config::load(new Variable([
             'phpKey' => 'aValue',
-            'ENV_KEY' => 'aValue'
+            'ENV_KEY' => 'aValue',
         ]), new None(), TestConfig::class);
         $this->assertSame('aValue', $config->phpKey);
         $this->assertSame('aValue', $config->envKey);
 
-        $config = Config::load(new Variable("ENV_KEY=aValue"), new Dotenv(), TestConfig::class);
+        $config = Config::load(new Variable('ENV_KEY=aValue'), new Dotenv(), TestConfig::class);
         $this->assertSame('aValue', $config->envKey);
 
         $config = Config::load(new Environment(), new None(), TestEnvConfig::class);
@@ -67,35 +64,35 @@ class ConfigTest extends TestCase
             [
                 'adapter' => PHP::class,
                 'extension' => 'php',
-                'key' => 'phpKey'
+                'key' => 'phpKey',
             ],
             [
                 'adapter' => JSON::class,
                 'extension' => 'json',
-                'key' => 'jsonKey'
+                'key' => 'jsonKey',
             ],
             [
                 'adapter' => YAML::class,
                 'extension' => 'yaml',
-                'key' => 'yamlKey'
+                'key' => 'yamlKey',
             ],
             [
                 'adapter' => YAML::class,
                 'extension' => 'yml',
-                'key' => 'ymlKey'
+                'key' => 'ymlKey',
             ],
             [
                 'adapter' => Dotenv::class,
                 'extension' => 'env',
-                'key' => 'envKey'
+                'key' => 'envKey',
             ],
         ];
     }
 
     /**
      * @param  class-string  $adapter
-     * @dataProvider provideAdapterScenarios
      */
+    #[DataProvider('provideAdapterScenarios')]
     public function testAdapters(string $adapter, string $extension, string $key): void
     {
         $adapter = new $adapter();
@@ -103,7 +100,7 @@ class ConfigTest extends TestCase
             throw new \Exception('Test scenario includes invalid adapter.');
         }
 
-        $config = Config::load(new File(__DIR__.'/../resources/config.'.$extension), $adapter, TestConfig::class);
+        $config = Config::load(new File(__DIR__ . '/../resources/config.' . $extension), $adapter, TestConfig::class);
 
         $this->assertSame('customValue', $config->$key);
     }
@@ -157,13 +154,13 @@ class ConfigTest extends TestCase
     public function testNestedValues(): void
     {
         $jsons = [
-           <<<JSON
+            <<<JSON
                 {
                 "db.host": "docker.internal",
                 "db.config.tls": true
                 }
             JSON,
-           <<<JSON
+            <<<JSON
                 {
                   "db": {
                     "host": "docker.internal",
@@ -173,7 +170,7 @@ class ConfigTest extends TestCase
                   }
                 }
             JSON,
-           <<<JSON
+            <<<JSON
                 {
                   "db": {
                     "host": "docker.internal",
@@ -181,7 +178,7 @@ class ConfigTest extends TestCase
                   }
                 }
             JSON,
-           <<<JSON
+            <<<JSON
                 {
                   "db.host": "docker.internal",
                   "db": {
@@ -195,7 +192,7 @@ class ConfigTest extends TestCase
 
         foreach ($jsons as $json) {
             $config = Config::load(new Variable($json), new JSON(), TestNestedValueConfig::class);
-            $this->assertSame("docker.internal", $config->dbHost);
+            $this->assertSame('docker.internal', $config->dbHost);
             $this->assertSame(true, $config->tls);
         }
     }
@@ -254,15 +251,15 @@ class TestConfigWithMethod
 
     public function convertKey(): string
     {
-        return \strtoupper($this->key);
+        return strtoupper($this->key);
     }
 }
 
 class TestConfigWithoutType
 {
-    // PHPStan ignore because we intentionally test this; at runtime we ensure type is required
+    // Intentionally untyped: at runtime we ensure the type is required
     #[Key('key', new Text(1024, 0))]
-    public $key; // /** @phpstan-ignore missingType.property */
+    public $key;
 }
 
 class TestConfigWithExtraProperties

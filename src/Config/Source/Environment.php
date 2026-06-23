@@ -8,6 +8,6 @@ class Environment extends Source
 {
     public function __construct()
     {
-        $this->contents = \getenv();
+        $this->contents = getenv();
     }
 }
