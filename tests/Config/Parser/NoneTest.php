@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Utopia\Tests\Parser;
 
 use PHPUnit\Framework\TestCase;
 use Utopia\Config\Exception\Parse;
 use Utopia\Config\Parser\None;
 
-class NoneTest extends TestCase
+final class NoneTest extends TestCase
 {
     protected None $parser;
 
@@ -33,7 +35,7 @@ class NoneTest extends TestCase
         $this->assertSame('hello world', $data['string']);
         $this->assertSame('ä你こحب🌍', $data['unicode_string']);
         $this->assertSame(42, $data['integer']);
-        $this->assertSame(3.14159, $data['float']);
+        $this->assertEqualsWithDelta(3.14159, $data['float'], PHP_FLOAT_EPSILON);
         $this->assertSame(-50, $data['negative']);
         $this->assertTrue($data['boolean_true']);
         $this->assertFalse($data['boolean_false']);
@@ -43,25 +45,25 @@ class NoneTest extends TestCase
     public function testNoneParseExceptionNull(): void
     {
         $this->expectException(Parse::class);
-        $data = $this->parser->parse(null);
+        $this->parser->parse(null);
     }
 
     public function testNoneParseExceptionString(): void
     {
         $this->expectException(Parse::class);
-        $data = $this->parser->parse('hello');
+        $this->parser->parse('hello');
     }
 
     public function testNoneParseExceptionBoolean(): void
     {
         $this->expectException(Parse::class);
-        $data = $this->parser->parse(false);
+        $this->parser->parse(false);
     }
 
     public function testNoneParseExceptionNumber(): void
     {
         $this->expectException(Parse::class);
-        $data = $this->parser->parse(12);
+        $this->parser->parse(12);
     }
 
     public function testNoneEdgeCases(): void

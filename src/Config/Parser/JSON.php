@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Utopia\Config\Parser;
 
 use Utopia\Config\Exception\Parse;
@@ -17,7 +19,7 @@ class JSON extends Parser
             throw new Parse('Contents must be a string.');
         }
 
-        if (empty($contents)) {
+        if ($contents === '' || $contents === '0') {
             return [];
         }
 

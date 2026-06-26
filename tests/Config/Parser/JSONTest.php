@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Utopia\Tests\Parser;
 
 use PHPUnit\Framework\TestCase;
 use Utopia\Config\Exception\Parse;
 use Utopia\Config\Parser\JSON;
 
-class JSONTest extends TestCase
+final class JSONTest extends TestCase
 {
     protected JSON $parser;
 
@@ -35,7 +37,7 @@ class JSONTest extends TestCase
         $this->assertSame('hello world', $data['string']);
         $this->assertSame('ä你こحب🌍', $data['unicode_string']);
         $this->assertSame(42, $data['integer']);
-        $this->assertSame(3.14159, $data['float']);
+        $this->assertEqualsWithDelta(3.14159, $data['float'], PHP_FLOAT_EPSILON);
         $this->assertSame(-50, $data['negative']);
         $this->assertTrue($data['boolean_true']);
         $this->assertFalse($data['boolean_false']);
@@ -62,9 +64,9 @@ class JSONTest extends TestCase
         $this->assertCount(5, $data['mixed_array']);
         $this->assertSame('string', $data['mixed_array'][0]);
         $this->assertSame(42, $data['mixed_array'][1]);
-        $this->assertSame(true, $data['mixed_array'][2]);
-        $this->assertSame(null, $data['mixed_array'][3]);
-        $this->assertSame(3.14, $data['mixed_array'][4]);
+        $this->assertTrue($data['mixed_array'][2]);
+        $this->assertNull($data['mixed_array'][3]);
+        $this->assertEqualsWithDelta(3.14, $data['mixed_array'][4], PHP_FLOAT_EPSILON);
 
         $this->assertCount(3, $data['nested_array']);
 
@@ -74,7 +76,7 @@ class JSONTest extends TestCase
 
         $this->assertSame(2, $data['nested_array'][0][1]);
         $this->assertSame('b', $data['nested_array'][1][1]);
-        $this->assertSame(false, $data['nested_array'][2][1]);
+        $this->assertFalse($data['nested_array'][2][1]);
 
         $this->assertIsArray($data['empty_array']);
         $this->assertCount(0, $data['empty_array']);
@@ -107,7 +109,7 @@ class JSONTest extends TestCase
 
         $this->assertSame('John Doe', $data['simple_object']['name']);
         $this->assertSame(30, $data['simple_object']['age']);
-        $this->assertSame(true, $data['simple_object']['active']);
+        $this->assertTrue($data['simple_object']['active']);
 
         $this->assertArrayHasKey('user', $data['nested_object']);
         $this->assertArrayHasKey('profile', $data['nested_object']['user']);

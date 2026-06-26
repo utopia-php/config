@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Utopia\Tests\Parser;
 
 use PHPUnit\Framework\TestCase;
@@ -10,7 +12,7 @@ use Utopia\Validator\AnyOf;
 use Utopia\Validator\Text;
 use Utopia\Validator\WhiteList;
 
-class DotenvTest extends TestCase
+final class DotenvTest extends TestCase
 {
     protected Dotenv $parser;
 

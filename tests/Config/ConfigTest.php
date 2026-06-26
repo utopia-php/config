@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Utopia\Tests;
 
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -21,7 +23,7 @@ use Utopia\Validator\Boolean;
 use Utopia\Validator\Nullable;
 use Utopia\Validator\Text;
 
-class ConfigTest extends TestCase
+final class ConfigTest extends TestCase
 {
     protected function setUp(): void {}
 
@@ -57,36 +59,34 @@ class ConfigTest extends TestCase
     }
 
     /**
-     * @return array<mixed>
+     * @return \Iterator<(int | string), mixed>
      */
-    public static function provideAdapterScenarios(): array
+    public static function provideAdapterScenarios(): \Iterator
     {
-        return [
-            [
-                'adapter' => PHP::class,
-                'extension' => 'php',
-                'key' => 'phpKey',
-            ],
-            [
-                'adapter' => JSON::class,
-                'extension' => 'json',
-                'key' => 'jsonKey',
-            ],
-            [
-                'adapter' => YAML::class,
-                'extension' => 'yaml',
-                'key' => 'yamlKey',
-            ],
-            [
-                'adapter' => YAML::class,
-                'extension' => 'yml',
-                'key' => 'ymlKey',
-            ],
-            [
-                'adapter' => Dotenv::class,
-                'extension' => 'env',
-                'key' => 'envKey',
-            ],
+        yield [
+            'adapter' => PHP::class,
+            'extension' => 'php',
+            'key' => 'phpKey',
+        ];
+        yield [
+            'adapter' => JSON::class,
+            'extension' => 'json',
+            'key' => 'jsonKey',
+        ];
+        yield [
+            'adapter' => YAML::class,
+            'extension' => 'yaml',
+            'key' => 'yamlKey',
+        ];
+        yield [
+            'adapter' => YAML::class,
+            'extension' => 'yml',
+            'key' => 'ymlKey',
+        ];
+        yield [
+            'adapter' => Dotenv::class,
+            'extension' => 'env',
+            'key' => 'envKey',
         ];
     }
 
@@ -194,7 +194,7 @@ class ConfigTest extends TestCase
         foreach ($jsons as $json) {
             $config = Config::load(new Variable($json), new JSON(), TestNestedValueConfig::class);
             $this->assertSame('docker.internal', $config->dbHost);
-            $this->assertSame(true, $config->tls);
+            $this->assertTrue($config->tls);
         }
     }
 
@@ -316,13 +316,13 @@ class TestNestedValueConfig
 class TestNullableConfig
 {
     #[Key('name', new Nullable(new Text(1024)), required: true)]
-    public ?string $name;
+    public ?string $name = null;
 }
 
 class TestNestedNullableConfig
 {
     #[Key('db.name', new Nullable(new Text(1024)), required: true)]
-    public ?string $dbName;
+    public ?string $dbName = null;
 }
 
 class TestOptionalNullableConfig

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Utopia\Config\Parser;
 
 use Utopia\Config\Exception\Parse;

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Utopia\Config\Source;
 
 use Utopia\Config\Source;

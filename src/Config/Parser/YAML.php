@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Utopia\Config\Parser;
 
 use Utopia\Config\Exception\Parse;
@@ -17,7 +19,7 @@ class YAML extends Parser
             throw new Parse('Contents must be a string.');
         }
 
-        if (empty($contents)) {
+        if ($contents === '' || $contents === '0') {
             return [];
         }
 
@@ -25,12 +27,10 @@ class YAML extends Parser
         try {
             $config = yaml_parse($contents);
         } catch (\Throwable $e) {
-            throw new Parse(
-                'Failed to parse YAML config file: ' . $e->getMessage(),
-            );
+            throw new Parse('Failed to parse YAML config file: ' . $e->getMessage(), $e->getCode(), $e);
         }
 
-        if ($config === false || $config === null || $config === $contents) {
+        if (\in_array($config, [false, null, $contents], true)) {
             throw new Parse('Config file is not a valid YAML file.');
         }
 

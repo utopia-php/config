@@ -110,7 +110,7 @@ class Dotenv extends Parser
             throw new Parse('Contents must be a string.');
         }
 
-        if (empty($contents)) {
+        if ($contents === '' || $contents === '0') {
             return [];
         }
 
@@ -119,9 +119,11 @@ class Dotenv extends Parser
         $lines = explode("\n", $contents);
         foreach ($lines as $line) {
             $line = trim($line);
-
             // Blank line or whole-line comment
-            if ($line === '' || $line[0] === '#') {
+            if ($line === '') {
+                continue;
+            }
+            if ($line[0] === '#') {
                 continue;
             }
 
@@ -138,12 +140,12 @@ class Dotenv extends Parser
             $value = $this->parseValue($parts[1]);
 
             // Missing name likely means bad syntax
-            if (empty($name)) {
+            if ($name === '' || $name === '0') {
                 throw new Parse('Config file is not a valid dotenv file.');
             }
 
             // Smart type-casting
-            if ($reflection !== null) {
+            if ($reflection instanceof \ReflectionClass) {
                 $reflectionProperty = null;
                 foreach ($reflection->getProperties() as $property) {
                     foreach ($property->getAttributes(Key::class, ReflectionAttribute::IS_INSTANCEOF) as $attribute) {

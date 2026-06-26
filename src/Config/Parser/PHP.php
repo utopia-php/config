@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Utopia\Config\Parser;
 
 use Utopia\Config\Exception\Parse;
@@ -29,7 +31,7 @@ class PHP extends Parser
         try {
             $contents = include $tempPath;
         } catch (\Throwable $e) {
-            throw new Parse('Failed to parse PHP config file: ' . $e->getMessage());
+            throw new Parse('Failed to parse PHP config file: ' . $e->getMessage(), $e->getCode(), $e);
         } finally {
             unlink($tempPath);
         }
