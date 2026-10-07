@@ -1,7 +1,7 @@
 # Utopia Config
 
 > [!IMPORTANT]
-> This repository is a read-only mirror of the [utopia-php monorepo](https://github.com/utopia-php/monorepo). Development happens in [`packages/config`](https://github.com/utopia-php/monorepo/tree/main/packages/config) — please open issues and pull requests there.
+> This repository is a read-only mirror of [`packages/config`](https://github.com/appwrite/appwrite/tree/main/packages/config) in [appwrite/appwrite](https://github.com/appwrite/appwrite). Development happens there — please open issues and pull requests against appwrite/appwrite.
 
 [![Build Status](https://travis-ci.org/utopia-php/config.svg?branch=master)](https://travis-ci.com/utopia-php/config)
 ![Total Downloads](https://img.shields.io/packagist/dt/utopia-php/config.svg)
@@ -48,7 +48,7 @@ class DatabaseConfig
 
     #[Key('db.password', new Text(length: 1024), required: true)]
     public string $password;
-    
+
     #[Key('db.name', new Nullable(new Text(length: 1024)), required: true)]
     public ?string $name;
 
@@ -148,7 +148,7 @@ class FirewallConfig
      */
     #[Key('ALLOW_IPS', new ArrayList(new Text(length: 100), length: 100), required: true)]
     public array $allowIps;
-    
+
     #[Key('CAPTCHA', new Whitelist(['enabled', 'disabled']), required: true)]
     public string $captcha;
 }
@@ -157,7 +157,7 @@ class CredentialsConfig
 {
     #[Key('DATABASE_PASSWORD', new Text(length: 1024), required: true)]
     public string $dbPass;
-    
+
     #[Key('CACHE_PASSWORD', new Text(length: 1024), required: true)]
     public string $cachePass;
 }
@@ -166,19 +166,19 @@ class EnvironmentConfig
 {
     #[Key('RATE_LIMIT_HITS', new Integer(loose: true), required: true)]
     public int $abuseHits;
-    
+
     #[Key('RATE_LIMIT_SECONDS', new Integer(loose: true), required: true)]
-    public int $abuseTime;   
+    public int $abuseTime;
 }
 
 class AppConfig
 {
     #[ConfigKey]
     public FirewallConfig $firewall;
-    
+
     #[ConfigKey]
     public CredentialsConfig $credentials;
-    
+
     #[ConfigKey]
     public EnvironmentConfig $environment;
 }
@@ -212,7 +212,7 @@ class CredentialsConfig
 {
     #[Key('DATABASE_PASSWORD', new Text(length: 1024), required: true)]
     public string $dbPass;
-    
+
     #[Key('CACHE_PASSWORD', new Text(length: 1024), required: true)]
     public string $cachePass;
 }
@@ -223,6 +223,21 @@ $config = Config::load(new Environment(), new None(), CredentialsConfig::class);
 // $config->dbPass
 // $config->$cachePass
 ```
+
+
+## Registry
+
+`Config` also holds a process-wide key/value registry, for configuration an application assembles at boot and reads everywhere:
+
+```php
+use Utopia\Config\Config;
+
+Config::setParam('platform', include __DIR__ . '/config/platform.php');
+
+Config::getParam('platform.hostname', 'localhost'); // dotted keys walk nested arrays
+```
+
+A key that is absent or `null` returns the default.
 
 ## System requirements
 
